@@ -118,3 +118,25 @@ def list():
         table.add_row(snapshot.name, timeago.format(snapshot.created_at))
 
     cprint(table)
+
+
+@cli.command()
+@click.argument("name")
+def delete(name):
+    """
+    Deletes a snapshot
+    """
+    try:
+        snapshot = find_snapshot(name)
+    except SnapshotNotFound:
+        eprint(f"Snapshot {name} does not exist", style="red")
+        sys.exit(1)
+
+    try:
+        delete_snapshot(snapshot)
+    except DSLRException as e:
+        eprint("Failed to delete snapshot")
+        eprint(e, style="white")
+        sys.exit(1)
+
+    cprint(f"Deleted snapshot {snapshot.name}", style="green")
