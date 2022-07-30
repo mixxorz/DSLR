@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
+from .console import console
+
 
 @dataclass
 class DatabaseConnection:
@@ -32,8 +34,8 @@ class Settings:
         )
 
         if debug:
-            print(f"URL: {self.url}")
-            print(f"DB: {self.db}")
+            console.log(f"URL: {self.url}")
+            console.log(f"DB: {self.db}")
 
 
 # Settings singleton

@@ -3,6 +3,7 @@ import subprocess
 from collections import namedtuple
 
 from .config import settings
+from .console import console
 
 Result = namedtuple("Result", ["returncode", "stdout", "stderr"])
 Snapshot = namedtuple("Snapshot", ["dbname", "name", "timestamp"])
@@ -21,7 +22,7 @@ def exec(cmd: str) -> Result:
     env["PGPASSWORD"] = settings.db.password or env.get("PGPASSWORD", "")
 
     if settings.debug:
-        print(f"COMMAND: {cmd}")
+        console.log(f"COMMAND: {cmd}")
 
     with subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, shell=True
@@ -29,8 +30,8 @@ def exec(cmd: str) -> Result:
         stdout, stderr = p.communicate()
 
         if settings.debug:
-            print("STDOUT:\n", stdout.decode("utf-8"), "\n")
-            print("STDERR:\n", stderr.decode("utf-8"), "\n")
+            console.log("STDOUT:\n", stdout.decode("utf-8"), "\n")
+            console.log("STDERR:\n", stderr.decode("utf-8"), "\n")
 
         return Result(
             returncode=p.returncode,
