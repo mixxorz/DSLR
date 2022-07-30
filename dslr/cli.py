@@ -1,9 +1,10 @@
-from datetime import datetime
-import click
 import sys
+from datetime import datetime
 
-from .operations import DSLRException, create_snapshot, get_snapshots
+import click
+
 from .config import settings
+from .operations import DSLRException, create_snapshot, get_snapshots
 
 
 @click.group
