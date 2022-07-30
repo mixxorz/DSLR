@@ -42,41 +42,44 @@ export DATABASE_URL=postgres://username:password@host:port/database_name
 
 Alternatively, you can pass the connection string via the `--db` option.
 
-At this point, you're ready to take your first snapshot.
+You're ready to use DSLR!
 
 ```
-# Take a snapshot
 $ dslr snapshot my-first-snapshot
 Created new snapshot my-first-snapshot
+
+$ dslr restore my-first-snapshot
+Restored database from snapshot my-first-snapshot
+
+$ dslr list
+
+  Name                Created
+ ────────────────────────────────────
+  my-first-snapshot   2 minutes ago
+
+$ dslr rename my-first-snapshot fresh-db
+Renamed snapshot my-first-snapshot to fresh-db
+
+$ dslr delete some-old-snapshot
+Deleted some-old-snapshot
+
+$ dslr export my-feature-test
+Exported snapshot my-feature-test to my-feature-test_20220730-075650.dump
+
+$ dslr import snapshot-from-a-friend_20220730-080632.dump friend-snapshot
+Imported snapshot friend-snapshot from snapshot-from-a-friend_20220730-080632.dump
 ```
 
-## Documentation
+## How does it work?
 
-```
-$ dslr --help
-Usage: dslr [OPTIONS] COMMAND [ARGS]...
+DSLR takes snapshots by cloning databases using Postgres' [Template
+Databases](https://www.postgresql.org/docs/current/manage-ag-templatedbs.html)
+functionality. This is the main source of DSLR's speed.
 
-Options:
-  --db TEXT             The database connection string to the database you
-                        want to take snapshots of. If not provided, DSLR will
-                        try to read it from the DATABASE_URL environment
-                        variable.
-
-                        Example:
-                        postgres://username:password@host:port/database_name
-                        [required]
-  --debug / --no-debug  Show additional debugging information.
-  --help                Show this message and exit.
-
-Commands:
-  delete    Deletes a snapshot
-  export    Exports a snapshot to a file
-  import    Imports a snapshot from a file
-  list      Shows a list of all snapshots
-  rename    Renames a snapshot
-  restore   Restores the database from a snapshot
-  snapshot  Takes a snapshot of the database
-```
+This means that taking a snapshot is just creating a new database, using the
+main database as the template. Restoring a snapshot is just deleting the main
+database and creating a new database using the snapshot database as the
+template. So on and so forth.
 
 ## License
 
