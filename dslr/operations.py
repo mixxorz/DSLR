@@ -71,11 +71,10 @@ def create_snapshot(snapshot_name: str):
     """
     Takes a snapshot of the database
 
-
     Snapshotting works by creating a new database using the local database as a
     template.
 
-        createdb -T wagtailkit_repo_name dslr_<timestamp>_<name>
+        createdb -T source_db_name dslr_<timestamp>_<name>
     """
     result = exec(
         "createdb", "-T", settings.db.name, f"dslr_{round(time())}_{snapshot_name}"
@@ -90,6 +89,21 @@ def delete_snapshot(snapshot: Snapshot):
     Deletes the given snapshot
     """
     result = exec("dropdb", snapshot.dbname)
+
+    if result.returncode != 0:
+        raise DSLRException(result.stderr)
+
+
+def restore_snapshot(snapshot: Snapshot):
+    """
+    Restores the database from the given snapshot
+    """
+    result = exec("dropdb", settings.db.name)
+
+    if result.returncode != 0:
+        raise DSLRException(result.stderr)
+
+    result = exec("createdb", "-T", snapshot.dbname, settings.db.name)
 
     if result.returncode != 0:
         raise DSLRException(result.stderr)

@@ -14,12 +14,21 @@ from .operations import (
     delete_snapshot,
     find_snapshot,
     get_snapshots,
+    restore_snapshot,
 )
 
 
 @click.group
-@click.option("--db", envvar="DATABASE_URL", required=True)
-@click.option("--debug/--no-debug")
+@click.option(
+    "--db",
+    envvar="DATABASE_URL",
+    required=True,
+    help="The database connection string to the database you want to take "
+    "snapshots of. If not provided, DSLR will try to read it from the "
+    "DATABASE_URL environment variable. "
+    "\n\nExample: postgres://username:password@host:port/database_name",
+)
+@click.option("--debug/--no-debug", help="Show additional debugging information.")
 def cli(db, debug):
     # Update the settings singleton
     settings.initialize(url=db, debug=debug)
@@ -28,6 +37,9 @@ def cli(db, debug):
 @cli.command()
 @click.argument("name")
 def snapshot(name: str):
+    """
+    Takes a snapshot of the database
+    """
     new = True
 
     try:
@@ -42,7 +54,6 @@ def snapshot(name: str):
 
         delete_snapshot(snapshot)
         new = False
-
     except SnapshotNotFound:
         pass
 
@@ -61,12 +72,33 @@ def snapshot(name: str):
 
 
 @cli.command()
-def restore():
-    pass
+@click.argument("name")
+def restore(name):
+    """
+    Restores the database from a snapshot
+    """
+    try:
+        snapshot = find_snapshot(name)
+    except SnapshotNotFound:
+        eprint(f"Snapshot {name} does not exist", style="red")
+        sys.exit(1)
+
+    with console.status("Restoring snapshot"):
+        try:
+            restore_snapshot(snapshot)
+        except DSLRException as e:
+            eprint("Failed to restore snapshot")
+            eprint(e, style="white")
+            sys.exit(1)
+
+    cprint(f"Restored database from snapshot {snapshot.name}", style="green")
 
 
 @cli.command()
 def list():
+    """
+    Shows a list of all snapshots
+    """
     try:
         snapshots = get_snapshots()
     except DSLRException as e:
