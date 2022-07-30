@@ -130,7 +130,7 @@ def rename_snapshot(snapshot: Snapshot, new_name: str):
         "psql",
         "-c",
         f'ALTER DATABASE "{snapshot.dbname}" RENAME TO '
-        f'"{generate_snapshot_db_name(snapshot.name, snapshot.created_at)}"',
+        f'"{generate_snapshot_db_name(new_name, snapshot.created_at)}"',
     )
 
     if result.returncode != 0:
