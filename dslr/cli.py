@@ -15,6 +15,7 @@ from .operations import (
     export_snapshot,
     find_snapshot,
     get_snapshots,
+    import_snapshot,
     rename_snapshot,
     restore_snapshot,
 )
@@ -195,10 +196,43 @@ def export(name):
         sys.exit(1)
 
     try:
-        export_path = export_snapshot(snapshot)
+        with console.status("Exporting snapshot"):
+            export_path = export_snapshot(snapshot)
     except DSLRException as e:
         eprint("Failed to export snapshot")
         eprint(e, style="white")
         sys.exit(1)
 
     cprint(f"Exported snapshot {snapshot.name} to {export_path}", style="green")
+
+
+@cli.command("import")
+@click.argument("filename")
+@click.argument("name")
+def import_(filename, name):
+    """
+    Imports a snapshot from a file
+    """
+    try:
+        snapshot = find_snapshot(name)
+
+        click.confirm(
+            click.style(
+                f"Snapshot {snapshot.name} already exists. Overwrite?", fg="yellow"
+            ),
+            abort=True,
+        )
+
+        delete_snapshot(snapshot)
+    except SnapshotNotFound:
+        pass
+
+    try:
+        with console.status("Importing snapshot"):
+            import_snapshot(filename, name)
+    except DSLRException as e:
+        eprint("Failed to import snapshot")
+        eprint(e, style="white")
+        sys.exit(1)
+
+    cprint(f"Imported snapshot {name} from {filename}", style="green")
