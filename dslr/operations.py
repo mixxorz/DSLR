@@ -1,8 +1,12 @@
+from collections import namedtuple
+from datetime import datetime
 from time import time
 from typing import List
 
 from .config import settings
-from .runner import Snapshot, exec
+from .runner import exec
+
+Snapshot = namedtuple("Snapshot", ["dbname", "name", "created_at"])
 
 
 class DSLRException(Exception):
@@ -34,7 +38,11 @@ def get_snapshots() -> List[Snapshot]:
     # Parse the name into a Snapshot
     parts = [line.split("_") for line in lines]
     return [
-        Snapshot(dbname=line, name="_".join(part[2:]), timestamp=int(part[1]))
+        Snapshot(
+            dbname=line,
+            name="_".join(part[2:]),
+            created_at=datetime.fromtimestamp(int(part[1])),
+        )
         for part, line in zip(parts, lines)
     ]
 

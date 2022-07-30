@@ -6,7 +6,6 @@ from .config import settings
 from .console import console
 
 Result = namedtuple("Result", ["returncode", "stdout", "stderr"])
-Snapshot = namedtuple("Snapshot", ["dbname", "name", "timestamp"])
 
 
 def exec(*cmd: str) -> Result:

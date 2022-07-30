@@ -1,7 +1,9 @@
 import sys
-from datetime import datetime
 
 import click
+import timeago
+from rich import box
+from rich.table import Table
 
 from .config import settings
 from .console import console, cprint, eprint
@@ -48,8 +50,11 @@ def list():
         cprint("No snapshots found", style="yellow")
         return
 
-    for snapshot in snapshots:
-        click.echo(
-            f'{datetime.fromtimestamp(snapshot.timestamp).strftime("%Y-%m-%d %H:%M:%S")} '
-            + click.style(f"{snapshot.name}", fg="cyan")
-        )
+    table = Table(box=box.SIMPLE)
+    table.add_column("Name", style="cyan")
+    table.add_column("Created")
+
+    for snapshot in sorted(snapshots, key=lambda s: s.created_at, reverse=True):
+        table.add_row(snapshot.name, timeago.format(snapshot.created_at))
+
+    cprint(table)
