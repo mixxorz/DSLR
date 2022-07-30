@@ -12,6 +12,7 @@ from .operations import (
     SnapshotNotFound,
     create_snapshot,
     delete_snapshot,
+    export_snapshot,
     find_snapshot,
     get_snapshots,
     rename_snapshot,
@@ -179,3 +180,25 @@ def rename(old_name, new_name):
         sys.exit(1)
 
     cprint(f"Renamed snapshot {old_name} to {new_name}", style="green")
+
+
+@cli.command()
+@click.argument("name")
+def export(name):
+    """
+    Exports a snapshot to a file
+    """
+    try:
+        snapshot = find_snapshot(name)
+    except SnapshotNotFound:
+        eprint(f"Snapshot {name} does not exist", style="red")
+        sys.exit(1)
+
+    try:
+        export_path = export_snapshot(snapshot)
+    except DSLRException as e:
+        eprint("Failed to export snapshot")
+        eprint(e, style="white")
+        sys.exit(1)
+
+    cprint(f"Exported snapshot {snapshot.name} to {export_path}", style="green")

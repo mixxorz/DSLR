@@ -122,3 +122,16 @@ def rename_snapshot(snapshot: Snapshot, new_name: str):
 
     if result.returncode != 0:
         raise DSLRException(result.stderr)
+
+
+def export_snapshot(snapshot: Snapshot) -> str:
+    """
+    Exports the given snapshot to a file
+    """
+    export_path = f"{snapshot.name}_{snapshot.created_at:%Y%m%d-%H%M%S}.dump"
+    result = exec("pg_dump", "-Fc", "-d", snapshot.dbname, "-f", export_path)
+
+    if result.returncode != 0:
+        raise DSLRException(result.stderr)
+
+    return export_path
