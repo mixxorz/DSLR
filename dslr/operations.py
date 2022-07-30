@@ -26,6 +26,23 @@ def generate_snapshot_db_name(
     return f"dslr_{timestamp}_{snapshot_name}"
 
 
+def kill_connections(dbname: str):
+    """
+    Kills all connections to the given database
+    """
+    result = exec(
+        "psql",
+        "-d",
+        "postgres",
+        "-c",
+        "SELECT pg_terminate_backend(pg_stat_activity.pid) "
+        f"FROM pg_stat_activity WHERE pg_stat_activity.datname = '{dbname}'",
+    )
+
+    if result.returncode != 0:
+        raise DSLRException(result.stderr)
+
+
 def get_snapshots() -> List[Snapshot]:
     """
     Returns the list of database snapshots
@@ -89,6 +106,8 @@ def create_snapshot(snapshot_name: str):
 
         createdb -T source_db_name dslr_<timestamp>_<name>
     """
+    kill_connections(settings.db.name)
+
     result = exec(
         "createdb", "-T", settings.db.name, generate_snapshot_db_name(snapshot_name)
     )
@@ -111,6 +130,8 @@ def restore_snapshot(snapshot: Snapshot):
     """
     Restores the database from the given snapshot
     """
+    kill_connections(settings.db.name)
+
     result = exec("dropdb", settings.db.name)
 
     if result.returncode != 0:
