@@ -4,6 +4,7 @@ from datetime import datetime
 import click
 
 from .config import settings
+from .console import console, cprint, eprint
 from .operations import DSLRException, create_snapshot, get_snapshots
 
 
@@ -19,13 +20,14 @@ def cli(db, debug):
 @click.argument("name")
 def snapshot(name: str):
     try:
-        create_snapshot(name)
+        with console.status("Creating snapshot"):
+            create_snapshot(name)
     except DSLRException as e:
-        click.echo(click.style("Failed to create snapshot", fg="red"), err=True)
-        click.echo(str(e), err=True)
+        eprint("Failed to create snapshot")
+        eprint(e, style="white")
         sys.exit(1)
 
-    click.echo(click.style("Snapshot created", fg="green"))
+    cprint("Snapshot created", style="green")
 
 
 @cli.command()
@@ -35,10 +37,15 @@ def restore():
 
 @cli.command()
 def list():
-    snapshots = get_snapshots()
+    try:
+        snapshots = get_snapshots()
+    except DSLRException as e:
+        eprint("Failed to list snapshots")
+        eprint(f"{e}", style="white")
+        sys.exit(1)
 
     if len(snapshots) == 0:
-        click.echo(click.style("No snapshots found", fg="yellow"))
+        cprint("No snapshots found", style="yellow")
         return
 
     for snapshot in snapshots:

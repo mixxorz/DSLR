@@ -18,7 +18,10 @@ def get_snapshots() -> List[Snapshot]:
     dslr_<timestamp>_<snapshot_name>
     """
     # Find the snapshot databases
-    result = exec("psql -c 'SELECT datname FROM pg_database'")
+    result = exec("psql", "-c", "SELECT datname FROM pg_database")
+
+    if result.returncode != 0:
+        raise DSLRException(result.stderr)
 
     lines = sorted(
         [
@@ -61,7 +64,7 @@ def create_snapshot(snapshot_name: str):
         createdb -T wagtailkit_repo_name dslr_<timestamp>_<name>
     """
     result = exec(
-        f"createdb -T {settings.db.name} dslr_{round(time())}_{snapshot_name}"
+        "createdb", "-T", settings.db.name, f"dslr_{round(time())}_{snapshot_name}"
     )
 
     if result.returncode != 0:

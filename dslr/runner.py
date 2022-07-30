@@ -9,7 +9,7 @@ Result = namedtuple("Result", ["returncode", "stdout", "stderr"])
 Snapshot = namedtuple("Snapshot", ["dbname", "name", "timestamp"])
 
 
-def exec(cmd: str) -> Result:
+def exec(*cmd: str) -> Result:
     """
     Executes a command.
     """
@@ -25,7 +25,10 @@ def exec(cmd: str) -> Result:
         console.log(f"COMMAND: {cmd}")
 
     with subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, shell=True
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=env,
     ) as p:
         stdout, stderr = p.communicate()
 
