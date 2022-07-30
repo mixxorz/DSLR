@@ -13,7 +13,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "License :: OSI Approved :: MIT License",
-    "Topic :: Database"<
+    "Topic :: Database",
 ]
 include = [
     "LICENSE",
