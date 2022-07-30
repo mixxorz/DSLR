@@ -23,6 +23,9 @@ def exec(cmd: str) -> Result:
     env["PGUSER"] = settings.db.username or env.get("PGUSER", "")
     env["PGPASSWORD"] = settings.db.password or env.get("PGPASSWORD", "")
 
+    if settings.debug:
+        print(f"COMMAND: {cmd}")
+
     with subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, shell=True
     ) as p:
