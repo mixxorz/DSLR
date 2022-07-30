@@ -128,7 +128,7 @@ class CliTest(TestCase):
         self.assertIn(
             "Exported snapshot existing-snapshot-1 to "
             "existing-snapshot-1_20200101-000000.dump",
-            result.output.replace("\n", " "),
+            result.output.replace("\n", ""),
         )
 
     def test_export_not_found(self):
