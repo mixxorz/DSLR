@@ -224,12 +224,14 @@ def export(name):
 
 
 @cli.command("import")
-@click.argument("filename")
+@click.argument("filename", type=click.Path(exists=True))
 @click.argument("name", shell_complete=complete_snapshot_names)
 def import_(filename, name):
     """
     Imports a snapshot from a file
     """
+    filename = click.format_filename(filename)
+
     try:
         snapshot = find_snapshot(name)
 
