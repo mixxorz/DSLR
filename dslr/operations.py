@@ -47,6 +47,10 @@ def get_snapshots() -> List[Snapshot]:
     ]
 
 
+class SnapshotNotFound(Exception):
+    pass
+
+
 def find_snapshot(snapshot_name: str) -> Snapshot:
     """
     Returns the snapshot with the given name
@@ -58,7 +62,9 @@ def find_snapshot(snapshot_name: str) -> Snapshot:
             snapshot for snapshot in snapshots if snapshot.name == snapshot_name
         )
     except StopIteration as e:
-        raise ValueError(f'Snapshot with name "{snapshot_name}" does not exist.') from e
+        raise SnapshotNotFound(
+            f'Snapshot with name "{snapshot_name}" does not exist.'
+        ) from e
 
 
 def create_snapshot(snapshot_name: str):
@@ -74,6 +80,16 @@ def create_snapshot(snapshot_name: str):
     result = exec(
         "createdb", "-T", settings.db.name, f"dslr_{round(time())}_{snapshot_name}"
     )
+
+    if result.returncode != 0:
+        raise DSLRException(result.stderr)
+
+
+def delete_snapshot(snapshot: Snapshot):
+    """
+    Deletes the given snapshot
+    """
+    result = exec("dropdb", snapshot.dbname)
 
     if result.returncode != 0:
         raise DSLRException(result.stderr)

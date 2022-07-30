@@ -7,7 +7,14 @@ from rich.table import Table
 
 from .config import settings
 from .console import console, cprint, eprint
-from .operations import DSLRException, create_snapshot, get_snapshots
+from .operations import (
+    DSLRException,
+    SnapshotNotFound,
+    create_snapshot,
+    delete_snapshot,
+    find_snapshot,
+    get_snapshots,
+)
 
 
 @click.group
@@ -21,6 +28,24 @@ def cli(db, debug):
 @cli.command()
 @click.argument("name")
 def snapshot(name: str):
+    new = True
+
+    try:
+        snapshot = find_snapshot(name)
+
+        click.confirm(
+            click.style(
+                f"Snapshot {snapshot.name} already exists. Overwrite?", fg="yellow"
+            ),
+            abort=True,
+        )
+
+        delete_snapshot(snapshot)
+        new = False
+
+    except SnapshotNotFound:
+        pass
+
     try:
         with console.status("Creating snapshot"):
             create_snapshot(name)
@@ -29,7 +54,10 @@ def snapshot(name: str):
         eprint(e, style="white")
         sys.exit(1)
 
-    cprint("Snapshot created", style="green")
+    if new:
+        cprint(f"Created new snapshot {name}", style="green")
+    else:
+        cprint(f"Updated snapshot {name}", style="green")
 
 
 @cli.command()
