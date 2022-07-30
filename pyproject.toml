@@ -15,6 +15,7 @@ timeago = "^1.0.15"
 isort = "^5.10.1"
 flake8 = "^4.0.1"
 black = "^22.6.0"
+ipdb = "^0.13.9"
 
 [tool.poetry.scripts]
 dslr = "dslr.cli:cli"
