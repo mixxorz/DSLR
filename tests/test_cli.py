@@ -141,12 +141,12 @@ class CliTest(TestCase):
     def test_import(self):
         runner = CliRunner()
         result = runner.invoke(
-            cli.cli, ["import", "existing-snapshot-1.dump", "imported-snapshot"]
+            cli.cli, ["import", "pyproject.toml", "imported-snapshot"]
         )
 
         self.assertEqual(result.exit_code, 0)
         self.assertIn(
-            "Imported snapshot imported-snapshot from existing-snapshot-1.dump",
+            "Imported snapshot imported-snapshot from pyproject.toml",
             result.output,
         )
 
@@ -154,7 +154,7 @@ class CliTest(TestCase):
         runner = CliRunner()
         result = runner.invoke(
             cli.cli,
-            ["import", "existing-snapshot-1.dump", "existing-snapshot-1"],
+            ["import", "pyproject.toml", "existing-snapshot-1"],
             input="y\n",
         )
 
@@ -163,6 +163,6 @@ class CliTest(TestCase):
             "Snapshot existing-snapshot-1 already exists. Overwrite?", result.output
         )
         self.assertIn(
-            "Imported snapshot existing-snapshot-1 from existing-snapshot-1.dump",
+            "Imported snapshot existing-snapshot-1 from pyproject.toml",
             result.output,
         )
