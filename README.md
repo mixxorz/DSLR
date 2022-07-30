@@ -1,4 +1,20 @@
-# DSLR
+<br />
+<br />
+<p align="center">
+  <img width="281" height="84" src="https://user-images.githubusercontent.com/3102758/181914025-44bff27e-aac1-4d1b-a037-9fa98f9fed65.png">
+</p>
+<br />
+
+<p align="center">
+  <a href=""><img src="" alt=""></a>
+  <a href="https://badge.fury.io/py/dslr"><img src="https://badge.fury.io/py/dslr.svg" alt="PyPI version"></a>
+  <a href="https://pypi.python.org/pypi/dslr/"><img src="https://img.shields.io/pypi/pyversions/dslr.svg" alt="PyPI Supported Python Versions"></a>
+  <a href="https://github.com/mixxorz/dslr"><img src="https://github.com/mixxorz/dslr/actions/workflows/tests.yml/badge.svg" alt="GitHub Actions (Code quality and tests)"></a>
+
+</p>
+<br />
+
+---
 
 Database Snapshot, List, and Restore
 
