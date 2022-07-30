@@ -92,8 +92,8 @@ DSLR takes snapshots by cloning databases using Postgres' [Template
 Databases](https://www.postgresql.org/docs/current/manage-ag-templatedbs.html)
 functionality. This is the main source of DSLR's speed.
 
-This means that taking a snapshot is just creating a new database, using the
-main database as the template. Restoring a snapshot is just deleting the main
+This means that taking a snapshot is just creating a new database using the main
+database as the template. Restoring a snapshot is just deleting the main
 database and creating a new database using the snapshot database as the
 template. So on and so forth.
 
