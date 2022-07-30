@@ -14,6 +14,7 @@ from .operations import (
     delete_snapshot,
     find_snapshot,
     get_snapshots,
+    rename_snapshot,
     restore_snapshot,
 )
 
@@ -140,3 +141,41 @@ def delete(name):
         sys.exit(1)
 
     cprint(f"Deleted snapshot {snapshot.name}", style="green")
+
+
+@cli.command()
+@click.argument("old_name")
+@click.argument("new_name")
+def rename(old_name, new_name):
+    """
+    Renames a snapshot
+    """
+    try:
+        old_snapshot = find_snapshot(old_name)
+    except SnapshotNotFound:
+        eprint(f"Snapshot {old_name} does not exist", style="red")
+        sys.exit(1)
+
+    try:
+        existing_snapshot = find_snapshot(new_name)
+
+        click.confirm(
+            click.style(
+                f"Snapshot {existing_snapshot.name} already exists. Overwrite?",
+                fg="yellow",
+            ),
+            abort=True,
+        )
+
+        delete_snapshot(existing_snapshot)
+    except SnapshotNotFound:
+        pass
+
+    try:
+        rename_snapshot(old_snapshot, new_name)
+    except DSLRException as e:
+        eprint("Failed to rename snapshot")
+        eprint(e, style="white")
+        sys.exit(1)
+
+    cprint(f"Renamed snapshot {old_name} to {new_name}", style="green")

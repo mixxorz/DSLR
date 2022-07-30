@@ -107,3 +107,18 @@ def restore_snapshot(snapshot: Snapshot):
 
     if result.returncode != 0:
         raise DSLRException(result.stderr)
+
+
+def rename_snapshot(snapshot: Snapshot, new_name: str):
+    """
+    Renames the given snapshot
+    """
+    result = exec(
+        "psql",
+        "-c",
+        f'ALTER DATABASE "{snapshot.dbname}" RENAME TO '
+        f'"dslr_{round(snapshot.created_at.timestamp())}_{new_name}"',
+    )
+
+    if result.returncode != 0:
+        raise DSLRException(result.stderr)
