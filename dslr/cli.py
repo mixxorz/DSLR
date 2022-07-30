@@ -1,3 +1,4 @@
+import os
 import sys
 
 import click
@@ -21,6 +22,21 @@ from .operations import (
 )
 
 
+def complete_snapshot_names(ctx, param, incomplete):
+    """
+    Returns a list of snapshot names for completion
+    """
+    if db_url := os.environ.get("DATABASE_URL"):
+        settings.initialize(url=db_url, debug=False)
+        return [
+            snapshot.name
+            for snapshot in get_snapshots()
+            if snapshot.name.startswith(incomplete)
+        ]
+
+    return []
+
+
 @click.group
 @click.option(
     "--db",
@@ -38,7 +54,7 @@ def cli(db, debug):
 
 
 @cli.command()
-@click.argument("name")
+@click.argument("name", shell_complete=complete_snapshot_names)
 def snapshot(name: str):
     """
     Takes a snapshot of the database
@@ -75,7 +91,7 @@ def snapshot(name: str):
 
 
 @cli.command()
-@click.argument("name")
+@click.argument("name", shell_complete=complete_snapshot_names)
 def restore(name):
     """
     Restores the database from a snapshot
@@ -124,7 +140,7 @@ def list():
 
 
 @cli.command()
-@click.argument("name")
+@click.argument("name", shell_complete=complete_snapshot_names)
 def delete(name):
     """
     Deletes a snapshot
@@ -146,8 +162,8 @@ def delete(name):
 
 
 @cli.command()
-@click.argument("old_name")
-@click.argument("new_name")
+@click.argument("old_name", shell_complete=complete_snapshot_names)
+@click.argument("new_name", shell_complete=complete_snapshot_names)
 def rename(old_name, new_name):
     """
     Renames a snapshot
@@ -184,7 +200,7 @@ def rename(old_name, new_name):
 
 
 @cli.command()
-@click.argument("name")
+@click.argument("name", shell_complete=complete_snapshot_names)
 def export(name):
     """
     Exports a snapshot to a file
@@ -208,7 +224,7 @@ def export(name):
 
 @cli.command("import")
 @click.argument("filename")
-@click.argument("name")
+@click.argument("name", shell_complete=complete_snapshot_names)
 def import_(filename, name):
     """
     Imports a snapshot from a file
