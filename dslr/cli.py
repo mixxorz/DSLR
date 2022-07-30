@@ -26,7 +26,8 @@ def complete_snapshot_names(ctx, param, incomplete):
     """
     Returns a list of snapshot names for completion
     """
-    if db_url := os.environ.get("DATABASE_URL"):
+    db_url = os.environ.get("DATABASE_URL")
+    if db_url:
         settings.initialize(url=db_url, debug=False)
         return [
             snapshot.name
