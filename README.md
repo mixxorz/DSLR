@@ -37,7 +37,7 @@ use DSLR on production databases.
 DSLR is much faster than the standard `pg_dump`/`pg_restore` approach to snapshots.
 
 <p align="center">
-  <img width="1013" height="437" src="https://user-images.githubusercontent.com/3102758/182014327-1b13da6e-63ad-4bbe-817e-7d6c66befc98.png" alt="A chart comparing the execution time between DSLR and pg_dump/pg_restore. For snapshot and restore, DSLR took 4.125 seconds and 4.431 seconds respectively. pg_dump/pg_restore took 36.602 seconds and 13.257 seconds respectively.">
+  <img src="https://user-images.githubusercontent.com/3102758/182014327-1b13da6e-63ad-4bbe-817e-7d6c66befc98.png" alt="A chart comparing the execution time between DSLR and pg_dump/pg_restore. For snapshot and restore, DSLR took 4.125 seconds and 4.431 seconds respectively. pg_dump/pg_restore took 36.602 seconds and 13.257 seconds respectively.">
 </p>
 
 DSLR is 8x faster at taking snapshots and 3x faster at restoring snapshots compared to the `pg_dump`/`pg_restore` approach.
