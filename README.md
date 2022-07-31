@@ -1,7 +1,9 @@
 <br />
 <br />
 <p align="center">
-  <img width="281" height="84" src="https://user-images.githubusercontent.com/3102758/181914025-44bff27e-aac1-4d1b-a037-9fa98f9fed65.png">
+  <a href="https://github.com/mixxorz/DSLR">
+    <img width="281" height="84" src="https://user-images.githubusercontent.com/3102758/181914025-44bff27e-aac1-4d1b-a037-9fa98f9fed65.png">
+  </a>
 </p>
 <br />
 
@@ -117,7 +119,7 @@ If a `dslr.toml` file exists in the current directory, DSLR will read its
 settings from there. DSLR will prefer this over the environment variable.
 
 ```toml
-url: postgres://username:password@host:port/database_name
+url = 'postgres://username:password@host:port/database_name'
 ```
 
 **`--url` option**
