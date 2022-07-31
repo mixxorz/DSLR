@@ -2,14 +2,63 @@ from collections import namedtuple
 from datetime import datetime
 from typing import List, Optional
 
+from psycopg2 import sql
+
 from .config import settings
 from .runner import exec_shell, exec_sql
-
-Snapshot = namedtuple("Snapshot", ["dbname", "name", "created_at"])
 
 
 class DSLRException(Exception):
     pass
+
+
+################################################################################
+# Database operations
+################################################################################
+
+
+def kill_connections(dbname: str):
+    """
+    Kills all connections to the given database
+    """
+    exec_sql(
+        "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity "
+        "WHERE pg_stat_activity.datname = %s",
+        [dbname],
+    )
+
+
+def create_database(*, dbname: str, template: Optional[str] = None):
+    """
+    Creates a new database with the given name, optionally using the given template
+    """
+    if template:
+        exec_sql(
+            sql.SQL("CREATE DATABASE {} TEMPLATE {}").format(
+                sql.Identifier(dbname),
+                sql.Identifier(template),
+            )
+        )
+    else:
+        exec_sql(
+            sql.SQL("CREATE DATABASE {}").format(
+                sql.Identifier(dbname),
+            )
+        )
+
+
+def drop_database(dbname: str):
+    """
+    Drops the given database
+    """
+    exec_sql(sql.SQL("DROP DATABASE {}").format(sql.Identifier(dbname)))
+
+
+################################################################################
+# Snapshot operations
+################################################################################
+
+Snapshot = namedtuple("Snapshot", ["dbname", "name", "created_at"])
 
 
 def generate_snapshot_db_name(
@@ -24,17 +73,6 @@ def generate_snapshot_db_name(
     timestamp = round(created_at.timestamp())
 
     return f"dslr_{timestamp}_{snapshot_name}"
-
-
-def kill_connections(dbname: str):
-    """
-    Kills all connections to the given database
-    """
-    exec_sql(
-        "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity "
-        "WHERE pg_stat_activity.datname = %s",
-        [dbname],
-    )
 
 
 def get_snapshots() -> List[Snapshot]:
@@ -88,14 +126,10 @@ def create_snapshot(snapshot_name: str):
 
     Snapshotting works by creating a new database using the local database as a
     template.
-
-        createdb -T source_db_name dslr_<timestamp>_<name>
     """
     kill_connections(settings.db.name)
-
-    exec_sql(
-        "CREATE DATABASE %s TEMPLATE %s",
-        [generate_snapshot_db_name(snapshot_name), settings.db.name],
+    create_database(
+        dbname=generate_snapshot_db_name(snapshot_name), template=settings.db.name
     )
 
 
@@ -103,7 +137,7 @@ def delete_snapshot(snapshot: Snapshot):
     """
     Deletes the given snapshot
     """
-    exec_sql("DROP DATABASE %s", [snapshot.dbname])
+    drop_database(snapshot.dbname)
 
 
 def restore_snapshot(snapshot: Snapshot):
@@ -111,16 +145,20 @@ def restore_snapshot(snapshot: Snapshot):
     Restores the database from the given snapshot
     """
     kill_connections(settings.db.name)
-
-    exec_sql("DROP DATABASE %s", [settings.db.name])
-    exec_sql("CREATE DATABASE %s TEMPLATE %s", [settings.db.name, snapshot.dbname])
+    drop_database(settings.db.name)
+    create_database(dbname=settings.db.name, template=snapshot.dbname)
 
 
 def rename_snapshot(snapshot: Snapshot, new_name: str):
     """
     Renames the given snapshot
     """
-    exec_sql("ALTER DATABASE %s RENAME TO %s", [snapshot.dbname, new_name])
+    exec_sql(
+        sql.SQL("ALTER DATABASE {} RENAME TO {}").format(
+            sql.Identifier(snapshot.dbname),
+            sql.Identifier(generate_snapshot_db_name(new_name, snapshot.created_at)),
+        )
+    )
 
 
 def export_snapshot(snapshot: Snapshot) -> str:
@@ -140,11 +178,11 @@ def import_snapshot(import_path: str, snapshot_name: str):
     """
     Imports the given snapshot from a file
     """
-    db_name = generate_snapshot_db_name(snapshot_name)
-    exec_sql("CREATE DATABASE %s", [db_name])
+    dbname = generate_snapshot_db_name(snapshot_name)
+    create_database(dbname=dbname)
 
     result = exec_shell(
-        "pg_restore", "-d", db_name, "--no-acl", "--no-owner", import_path
+        "pg_restore", "-d", dbname, "--no-acl", "--no-owner", import_path
     )
 
     if result.returncode != 0:

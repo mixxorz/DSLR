@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Tuple
 from unittest import TestCase, mock
 
 from click.testing import CliRunner
@@ -8,11 +8,11 @@ from click.testing import CliRunner
 from dslr import cli, operations, runner
 
 
-def stub_exec_shell(*cmd: str):
+def stub_exec_shell(*args, **kwargs):
     return runner.Result(returncode=0, stdout="", stderr="")
 
 
-def stub_exec_sql(sql: str, data: Optional[List[Any]] = None) -> List[Tuple[Any, ...]]:
+def stub_exec_sql(*args, **kwargs) -> List[Tuple[Any, ...]]:
     fake_snapshot_1 = operations.generate_snapshot_db_name(
         "existing-snapshot-1",
         created_at=datetime(2020, 1, 1, 0, 0, 0, 0),

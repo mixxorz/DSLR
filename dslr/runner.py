@@ -1,7 +1,9 @@
 import os
 import subprocess
 from collections import namedtuple
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, Union
+
+from psycopg2 import sql
 
 from dslr.pg_client import PGClient
 
@@ -50,7 +52,9 @@ def exec_shell(*cmd: str) -> Result:
 pg_client: Optional[PGClient] = None
 
 
-def exec_sql(sql: str, data: Optional[List[Any]] = None) -> List[Tuple[Any, ...]]:
+def exec_sql(
+    sql: Union[sql.SQL, str], data: Optional[List[Any]] = None
+) -> Optional[List[Tuple[Any, ...]]]:
     """
     Executes a SQL query.
     """
