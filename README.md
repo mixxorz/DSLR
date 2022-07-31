@@ -34,9 +34,55 @@ use DSLR on production databases.
 
 ## Performance
 
-DSLR is really fast.
+DSLR is much faster than the standard `pg_dump`/`pg_restore` approach to snapshots.
 
-_Impressive chart goes here_
+<p align="center">
+  <img width="1013" height="437" src="https://user-images.githubusercontent.com/3102758/182014327-1b13da6e-63ad-4bbe-817e-7d6c66befc98.png" alt="A chart comparing the execution time between DSLR and pg_dump/pg_restore. For snapshot and restore, DSLR took 4.125 seconds and 4.431 seconds respectively. pg_dump/pg_restore took 36.602 seconds and 13.257 seconds respectively.">
+</p>
+
+DSLR is 8x faster at taking snapshots and 3x faster at restoring snapshots compared to the `pg_dump`/`pg_restore` approach.
+
+<details>
+  <summary>Testing methodology</summary>
+  
+  I spun up Postgres 12.3 using Docker, created a test database, and filled it with 1GB of random data using this script:
+  
+  ```SQL
+  CREATE TABLE large_test (num1 bigint, num2 double precision, num3 double precision);
+
+  INSERT INTO large_test (num1, num2, num3)
+  SELECT round(random() * 10), random(), random() * 142
+  FROM generate_series(1, 20000000) s(i);
+  ```
+  
+  I used the following commands to measure the execution time:
+  
+  ```
+  time dslr snapshot my-snapshot
+  time dslr restore my-snapshot
+  time pg_dump -Fc -f export.dump
+  time pg_restore --no-acl --no-owner export.dump
+  ```
+  
+  I ran each command three times and plotted the mean in the chart.
+  
+  Here's the raw data:
+  
+  | Command       | Run | Execution time (seconds) |
+  | ------------- | --- | ------------------------ |
+  | dslr snapshot | 1   | 4.797                    |
+  |               | 2   | 4.650                    |
+  |               | 3   | 2.927                    |
+  | dslr restore  | 1   | 5.840                    |
+  |               | 2   | 4.122                    |
+  |               | 3   | 3.331                    |
+  | pg_dump       | 1   | 37.345                   |
+  |               | 2   | 36.227                   |
+  |               | 3   | 36.233                   |
+  | pg_restore    | 1   | 13.304                   |
+  |               | 2   | 13.148                   |
+  |               | 3   | 13.320                   |
+</details>
 
 ## Install
 
