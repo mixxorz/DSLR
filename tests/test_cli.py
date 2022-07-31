@@ -166,3 +166,112 @@ class CliTest(TestCase):
             "Imported snapshot existing-snapshot-1 from pyproject.toml",
             result.output,
         )
+
+
+@mock.patch("dslr.operations.exec", new=stub_exec)
+class ConfigTest(TestCase):
+    @mock.patch.dict(
+        os.environ, {"DATABASE_URL": "postgres://envvar:pw@test:5432/my_db"}
+    )
+    @mock.patch("dslr.cli.settings")
+    @mock.patch("dslr.operations.settings")
+    def test_database_url(self, mock_operations_settings, mock_cli_settings):
+        runner = CliRunner()
+        result = runner.invoke(cli.cli, ["snapshot", "my-snapshot"])
+
+        self.assertEqual(result.exit_code, 0)
+
+        mock_cli_settings.initialize.assert_called_once_with(
+            debug=False,
+            url="postgres://envvar:pw@test:5432/my_db",
+        )
+
+    @mock.patch("dslr.cli.settings")
+    @mock.patch("dslr.operations.settings")
+    def test_toml(self, mock_operations_settings, mock_cli_settings):
+        with mock.patch(
+            "builtins.open",
+            mock.mock_open(read_data=b"url = 'postgres://toml:pw@test:5432/my_db'"),
+        ):
+            runner = CliRunner()
+            result = runner.invoke(cli.cli, ["snapshot", "my-snapshot"])
+
+        self.assertEqual(result.exit_code, 0)
+
+        mock_cli_settings.initialize.assert_called_once_with(
+            debug=False,
+            url="postgres://toml:pw@test:5432/my_db",
+        )
+
+    @mock.patch("dslr.cli.settings")
+    @mock.patch("dslr.operations.settings")
+    def test_db_option(self, mock_operations_settings, mock_cli_settings):
+        runner = CliRunner()
+        result = runner.invoke(
+            cli.cli,
+            ["--url", "postgres://cli:pw@test:5432/my_db", "snapshot", "my-snapshot"],
+        )
+
+        self.assertEqual(result.exit_code, 0)
+
+        mock_cli_settings.initialize.assert_called_once_with(
+            debug=False,
+            url="postgres://cli:pw@test:5432/my_db",
+        )
+
+    @mock.patch("dslr.cli.settings")
+    @mock.patch("dslr.operations.settings")
+    def test_settings_preference_order(
+        self, mock_operations_settings, mock_cli_settings
+    ):
+        # No options passed (e.g. PG environment variables are used)
+        runner = CliRunner()
+        result = runner.invoke(cli.cli, ["snapshot", "my-snapshot"])
+        self.assertEqual(result.exit_code, 0)
+
+        # DATABASE_URL environment variable is used
+        with mock.patch.dict(
+            os.environ, {"DATABASE_URL": "postgres://envvar:pw@test:5432/my_db"}
+        ):
+            runner = CliRunner()
+            result = runner.invoke(cli.cli, ["snapshot", "my-snapshot"])
+            self.assertEqual(result.exit_code, 0)
+
+            # TOML file is used
+            with mock.patch(
+                "builtins.open",
+                mock.mock_open(read_data=b"url = 'postgres://toml:pw@test:5432/my_db'"),
+            ):
+                runner = CliRunner()
+                result = runner.invoke(cli.cli, ["snapshot", "my-snapshot"])
+                self.assertEqual(result.exit_code, 0)
+
+                # --url option is used
+                runner = CliRunner()
+                result = runner.invoke(
+                    cli.cli,
+                    [
+                        "--url",
+                        "postgres://cli:pw@test:5432/my_db",
+                        "snapshot",
+                        "my-snapshot",
+                    ],
+                )
+                self.assertEqual(result.exit_code, 0)
+
+        # Check that the correct order of settings is used
+        self.assertEqual(4, mock_cli_settings.initialize.call_count)
+
+        self.assertEqual(
+            mock_cli_settings.initialize.call_args_list,
+            [
+                # Nothing is passed
+                mock.call(debug=False, url=""),
+                # DATABASE_URL is present so use that
+                mock.call(debug=False, url="postgres://envvar:pw@test:5432/my_db"),
+                # TOML is present, so use that over DATABASE_URL
+                mock.call(debug=False, url="postgres://toml:pw@test:5432/my_db"),
+                # --url is present, so use that over everything
+                mock.call(debug=False, url="postgres://cli:pw@test:5432/my_db"),
+            ],
+        )

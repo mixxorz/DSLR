@@ -3,6 +3,7 @@ import sys
 
 import click
 import timeago
+import tomli
 from rich import box
 from rich.table import Table
 
@@ -38,20 +39,39 @@ def complete_snapshot_names(ctx, param, incomplete):
     return []
 
 
+def next_not_none(iterable):
+    """
+    Returns the next item in the iterable that is not None or ""
+    """
+    return next((item for item in iterable if item is not None and item != ""), None)
+
+
 @click.group
 @click.option(
-    "--db",
-    envvar="DATABASE_URL",
-    required=True,
+    "--url",
     help="The database connection string to the database you want to take "
-    "snapshots of. If not provided, DSLR will try to read it from the "
-    "DATABASE_URL environment variable. "
+    "snapshots of."
     "\n\nExample: postgres://username:password@host:port/database_name",
 )
 @click.option("--debug/--no-debug", help="Show additional debugging information.")
-def cli(db, debug):
+def cli(url, debug):
+    toml_params = {}
+    try:
+        with open("dslr.toml", "rb") as tomlf:
+            toml_params = tomli.load(tomlf)
+    except FileNotFoundError:
+        pass
+
+    config = {
+        "url": next_not_none(
+            [url, toml_params.get("url"), os.environ.get("DATABASE_URL")]
+        )
+        or "",
+        "debug": next_not_none([debug, toml_params.get("debug"), False]),
+    }
+
     # Update the settings singleton
-    settings.initialize(url=db, debug=debug)
+    settings.initialize(**config)
 
 
 @cli.command()

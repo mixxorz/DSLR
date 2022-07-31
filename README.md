@@ -50,59 +50,90 @@ DSLR is 8x faster at taking snapshots and 3x faster at restoring snapshots compa
   ```SQL
   CREATE TABLE large_test (num1 bigint, num2 double precision, num3 double precision);
 
-  INSERT INTO large_test (num1, num2, num3)
-  SELECT round(random() * 10), random(), random() * 142
-  FROM generate_series(1, 20000000) s(i);
-  ```
-  
-  I used the following commands to measure the execution time:
-  
-  ```
-  time dslr snapshot my-snapshot
-  time dslr restore my-snapshot
-  time pg_dump -Fc -f export.dump
-  time pg_restore --no-acl --no-owner export.dump
-  ```
-  
-  I ran each command three times and plotted the mean in the chart.
-  
-  Here's the raw data:
-  
-  | Command       | Run | Execution time (seconds) |
-  | ------------- | --- | ------------------------ |
-  | dslr snapshot | 1   | 4.797                    |
-  |               | 2   | 4.650                    |
-  |               | 3   | 2.927                    |
-  | dslr restore  | 1   | 5.840                    |
-  |               | 2   | 4.122                    |
-  |               | 3   | 3.331                    |
-  | pg_dump       | 1   | 37.345                   |
-  |               | 2   | 36.227                   |
-  |               | 3   | 36.233                   |
-  | pg_restore    | 1   | 13.304                   |
-  |               | 2   | 13.148                   |
-  |               | 3   | 13.320                   |
+INSERT INTO large*test (num1, num2, num3)
+SELECT round(random() * 10), random(), random() \_ 142
+FROM generate_series(1, 20000000) s(i);
+
+```
+
+I used the following commands to measure the execution time:
+
+```
+
+time dslr snapshot my-snapshot
+time dslr restore my-snapshot
+time pg_dump -Fc -f export.dump
+time pg_restore --no-acl --no-owner export.dump
+
+```
+
+I ran each command three times and plotted the mean in the chart.
+
+Here's the raw data:
+
+| Command       | Run | Execution time (seconds) |
+| ------------- | --- | ------------------------ |
+| dslr snapshot | 1   | 4.797                    |
+|               | 2   | 4.650                    |
+|               | 3   | 2.927                    |
+| dslr restore  | 1   | 5.840                    |
+|               | 2   | 4.122                    |
+|               | 3   | 3.331                    |
+| pg_dump       | 1   | 37.345                   |
+|               | 2   | 36.227                   |
+|               | 3   | 36.233                   |
+| pg_restore    | 1   | 13.304                   |
+|               | 2   | 13.148                   |
+|               | 3   | 13.320                   |
 </details>
 
 ## Install
 
 ```
+
 pip install DSLR
-```
+
+````
 
 DSLR requires that the Postgres client binaries (`psql`, `createdb`, `dropdb`)
 are present in your `PATH`. DSLR uses them to interact with Postgres.
 
-## Usage
+## Configuration
 
-First you need to point DSLR to the database you want to take snapshots of. The
-easiest way to do this is to export the `DATABASE_URL` environment variable.
+You can tell DSLR which database to take snapshots of in a few ways:
+
+**PG\* environment variables**
+
+If you have the [PG* environment
+variables](https://www.postgresql.org/docs/current/libpq-envars.html) set, DSLR
+will automatically try to use these in a similar way to `psql`.
+
+**DATABASE_URL**
+
+If the `DATABASE_URL` environment variable is set, DSLR will use this to connect
+to your target database. DSLR will prefer this over the PG* environment
+variables.
 
 ```bash
 export DATABASE_URL=postgres://username:password@host:port/database_name
+````
+
+**dslr.toml**
+
+If you have a `dslr.toml` file in the same directory where you're running
+`dslr`, DSLR will read its settings from it. DSLR will prefer this over the
+environment variables.
+
+```toml
+url: postgres://username:password@host:port/database_name
 ```
 
-Alternatively, you can pass the connection string via the `--db` option.
+**`--url` option**
+
+Finally, you can explicitly pass the connection string via the `--url` option.
+This will override any of the above settings.
+
+## Usage
 
 You're ready to use DSLR!
 
