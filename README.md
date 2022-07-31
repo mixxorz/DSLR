@@ -91,28 +91,21 @@ Here's the raw data:
 
 ```
 
-pip install DSLR
+pip install DSLR psycopg2 # or psycopg2-binary
 
 ````
 
-DSLR requires that the Postgres client binaries (`psql`, `createdb`, `dropdb`)
-are present in your `PATH`. DSLR uses them to interact with Postgres.
+Additionally, the DSLR `export` and `import` snapshot commands require `pg_dump`
+and `pg_restore` to be present in your `PATH`.
 
 ## Configuration
 
 You can tell DSLR which database to take snapshots of in a few ways:
 
-**PG\* environment variables**
-
-If you have the [PG* environment
-variables](https://www.postgresql.org/docs/current/libpq-envars.html) set, DSLR
-will automatically try to use these in a similar way to `psql`.
-
 **DATABASE_URL**
 
 If the `DATABASE_URL` environment variable is set, DSLR will use this to connect
-to your target database. DSLR will prefer this over the PG* environment
-variables.
+to your target database.
 
 ```bash
 export DATABASE_URL=postgres://username:password@host:port/database_name
@@ -120,9 +113,8 @@ export DATABASE_URL=postgres://username:password@host:port/database_name
 
 **dslr.toml**
 
-If you have a `dslr.toml` file in the same directory where you're running
-`dslr`, DSLR will read its settings from it. DSLR will prefer this over the
-environment variables.
+If a `dslr.toml` file exists in the current directory, DSLR will read its
+settings from there. DSLR will prefer this over the environment variable.
 
 ```toml
 url: postgres://username:password@host:port/database_name
@@ -134,8 +126,6 @@ Finally, you can explicitly pass the connection string via the `--url` option.
 This will override any of the above settings.
 
 ## Usage
-
-You're ready to use DSLR!
 
 ```
 $ dslr snapshot my-first-snapshot
