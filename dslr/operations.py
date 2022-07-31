@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from .config import settings
-from .runner import exec
+from .runner import exec, exec_sql
 
 Snapshot = namedtuple("Snapshot", ["dbname", "name", "created_at"])
 
@@ -52,28 +52,19 @@ def get_snapshots() -> List[Snapshot]:
     dslr_<timestamp>_<snapshot_name>
     """
     # Find the snapshot databases
-    result = exec("psql", "-c", "SELECT datname FROM pg_database")
+    result = exec_sql("SELECT datname FROM pg_database WHERE datname LIKE 'dslr_%'")
 
-    if result.returncode != 0:
-        raise DSLRException(result.stderr)
-
-    lines = sorted(
-        [
-            line.strip()
-            for line in result.stdout.split("\n")
-            if line.strip().startswith("dslr_")
-        ]
-    )
+    snapshot_dbnames = sorted([row[0] for row in result])
 
     # Parse the name into a Snapshot
-    parts = [line.split("_") for line in lines]
+    parts = [dbname.split("_") for dbname in snapshot_dbnames]
     return [
         Snapshot(
             dbname=line,
             name="_".join(part[2:]),
             created_at=datetime.fromtimestamp(int(part[1])),
         )
-        for part, line in zip(parts, lines)
+        for part, line in zip(parts, snapshot_dbnames)
     ]
 
 

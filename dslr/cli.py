@@ -10,7 +10,6 @@ from rich.table import Table
 from .config import settings
 from .console import console, cprint, eprint
 from .operations import (
-    DSLRException,
     SnapshotNotFound,
     create_snapshot,
     delete_snapshot,
@@ -100,7 +99,7 @@ def snapshot(name: str):
     try:
         with console.status("Creating snapshot"):
             create_snapshot(name)
-    except DSLRException as e:
+    except Exception as e:
         eprint("Failed to create snapshot")
         eprint(e, style="white")
         sys.exit(1)
@@ -126,7 +125,7 @@ def restore(name):
     with console.status("Restoring snapshot"):
         try:
             restore_snapshot(snapshot)
-        except DSLRException as e:
+        except Exception as e:
             eprint("Failed to restore snapshot")
             eprint(e, style="white")
             sys.exit(1)
@@ -141,7 +140,7 @@ def list():
     """
     try:
         snapshots = get_snapshots()
-    except DSLRException as e:
+    except Exception as e:
         eprint("Failed to list snapshots")
         eprint(f"{e}", style="white")
         sys.exit(1)
@@ -174,7 +173,7 @@ def delete(name):
 
     try:
         delete_snapshot(snapshot)
-    except DSLRException as e:
+    except Exception as e:
         eprint("Failed to delete snapshot")
         eprint(e, style="white")
         sys.exit(1)
@@ -212,7 +211,7 @@ def rename(old_name, new_name):
 
     try:
         rename_snapshot(old_snapshot, new_name)
-    except DSLRException as e:
+    except Exception as e:
         eprint("Failed to rename snapshot")
         eprint(e, style="white")
         sys.exit(1)
@@ -235,7 +234,7 @@ def export(name):
     try:
         with console.status("Exporting snapshot"):
             export_path = export_snapshot(snapshot)
-    except DSLRException as e:
+    except Exception as e:
         eprint("Failed to export snapshot")
         eprint(e, style="white")
         sys.exit(1)
@@ -269,7 +268,7 @@ def import_(filename, name):
     try:
         with console.status("Importing snapshot"):
             import_snapshot(filename, name)
-    except DSLRException as e:
+    except Exception as e:
         eprint("Failed to import snapshot")
         eprint(e, style="white")
         sys.exit(1)
