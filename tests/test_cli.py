@@ -9,7 +9,7 @@ from dslr import cli, operations, runner
 
 
 def stub_exec_shell(*args, **kwargs):
-    return runner.Result(returncode=0, stdout="", stderr="")
+    return runner.Result(stdout="", stderr="")
 
 
 def stub_exec_sql(*args, **kwargs) -> List[Tuple[Any, ...]]:
