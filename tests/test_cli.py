@@ -262,23 +262,16 @@ class ConfigTest(TestCase):
         # Check that the correct order of settings is used
         self.assertEqual(4, mock_cli_settings.initialize.call_count)
 
-        # Nothing is passed
         self.assertEqual(
-            mock_cli_settings.initialize.mock_calls[0].kwargs,
-            {"debug": False, "url": ""},
-        )
-        # DATABASE_URL is present so use that
-        self.assertEqual(
-            mock_cli_settings.initialize.mock_calls[1].kwargs,
-            {"debug": False, "url": "postgres://envvar:pw@test:5432/my_db"},
-        )
-        # TOML is present, so use that over DATABASE_URL
-        self.assertEqual(
-            mock_cli_settings.initialize.mock_calls[2].kwargs,
-            {"debug": False, "url": "postgres://toml:pw@test:5432/my_db"},
-        )
-        # --url is present, so use that over everything
-        self.assertEqual(
-            mock_cli_settings.initialize.mock_calls[3].kwargs,
-            {"debug": False, "url": "postgres://cli:pw@test:5432/my_db"},
+            mock_cli_settings.initialize.call_args_list,
+            [
+                # Nothing is passed
+                mock.call(debug=False, url=""),
+                # DATABASE_URL is present so use that
+                mock.call(debug=False, url="postgres://envvar:pw@test:5432/my_db"),
+                # TOML is present, so use that over DATABASE_URL
+                mock.call(debug=False, url="postgres://toml:pw@test:5432/my_db"),
+                # --url is present, so use that over everything
+                mock.call(debug=False, url="postgres://cli:pw@test:5432/my_db"),
+            ],
         )
