@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from typing import Any, List, Tuple
 from unittest import TestCase, mock
 
 from click.testing import CliRunner
@@ -7,28 +8,25 @@ from click.testing import CliRunner
 from dslr import cli, operations, runner
 
 
-def stub_exec(*cmd: str):
-    # Set up fake snapshots
-    if "SELECT datname FROM pg_database" in cmd:
-        fake_snapshot_1 = operations.generate_snapshot_db_name(
-            "existing-snapshot-1",
-            created_at=datetime(2020, 1, 1, 0, 0, 0, 0),
-        )
-        fake_snapshot_2 = operations.generate_snapshot_db_name(
-            "existing-snapshot-2",
-            created_at=datetime(2020, 1, 2, 0, 0, 0, 0),
-        )
-        return runner.Result(
-            returncode=0,
-            stdout="\n".join([fake_snapshot_1, fake_snapshot_2]),
-            stderr="",
-        )
+def stub_exec_shell(*args, **kwargs) -> runner.Result:
+    return runner.Result(stdout="", stderr="")
 
-    return runner.Result(returncode=0, stdout="", stderr="")
+
+def stub_exec_sql(*args, **kwargs) -> List[Tuple[Any, ...]]:
+    fake_snapshot_1 = operations.generate_snapshot_db_name(
+        "existing-snapshot-1",
+        created_at=datetime(2020, 1, 1, 0, 0, 0, 0),
+    )
+    fake_snapshot_2 = operations.generate_snapshot_db_name(
+        "existing-snapshot-2",
+        created_at=datetime(2020, 1, 2, 0, 0, 0, 0),
+    )
+    return [(fake_snapshot_1,), (fake_snapshot_2,)]
 
 
 @mock.patch.dict(os.environ, {"DATABASE_URL": "postgres://user:pw@test:5432/my_db"})
-@mock.patch("dslr.operations.exec", new=stub_exec)
+@mock.patch("dslr.operations.exec_shell", new=stub_exec_shell)
+@mock.patch("dslr.operations.exec_sql", new=stub_exec_sql)
 class CliTest(TestCase):
     def test_executes(self):
         runner = CliRunner()
@@ -168,16 +166,15 @@ class CliTest(TestCase):
         )
 
 
-@mock.patch("dslr.operations.exec", new=stub_exec)
+@mock.patch("dslr.cli.get_snapshots")
 class ConfigTest(TestCase):
     @mock.patch.dict(
         os.environ, {"DATABASE_URL": "postgres://envvar:pw@test:5432/my_db"}
     )
     @mock.patch("dslr.cli.settings")
-    @mock.patch("dslr.operations.settings")
-    def test_database_url(self, mock_operations_settings, mock_cli_settings):
+    def test_database_url(self, mock_cli_settings, mock_get_snapshots):
         runner = CliRunner()
-        result = runner.invoke(cli.cli, ["snapshot", "my-snapshot"])
+        result = runner.invoke(cli.cli, ["list"])
 
         self.assertEqual(result.exit_code, 0)
 
@@ -187,14 +184,13 @@ class ConfigTest(TestCase):
         )
 
     @mock.patch("dslr.cli.settings")
-    @mock.patch("dslr.operations.settings")
-    def test_toml(self, mock_operations_settings, mock_cli_settings):
+    def test_toml(self, mock_cli_settings, mock_get_snapshots):
         with mock.patch(
             "builtins.open",
             mock.mock_open(read_data=b"url = 'postgres://toml:pw@test:5432/my_db'"),
         ):
             runner = CliRunner()
-            result = runner.invoke(cli.cli, ["snapshot", "my-snapshot"])
+            result = runner.invoke(cli.cli, ["list"])
 
         self.assertEqual(result.exit_code, 0)
 
@@ -204,12 +200,11 @@ class ConfigTest(TestCase):
         )
 
     @mock.patch("dslr.cli.settings")
-    @mock.patch("dslr.operations.settings")
-    def test_db_option(self, mock_operations_settings, mock_cli_settings):
+    def test_db_option(self, mock_cli_settings, mock_get_snapshots):
         runner = CliRunner()
         result = runner.invoke(
             cli.cli,
-            ["--url", "postgres://cli:pw@test:5432/my_db", "snapshot", "my-snapshot"],
+            ["--url", "postgres://cli:pw@test:5432/my_db", "list"],
         )
 
         self.assertEqual(result.exit_code, 0)
@@ -220,13 +215,10 @@ class ConfigTest(TestCase):
         )
 
     @mock.patch("dslr.cli.settings")
-    @mock.patch("dslr.operations.settings")
-    def test_settings_preference_order(
-        self, mock_operations_settings, mock_cli_settings
-    ):
+    def test_settings_preference_order(self, mock_cli_settings, mock_get_snapshots):
         # No options passed (e.g. PG environment variables are used)
         runner = CliRunner()
-        result = runner.invoke(cli.cli, ["snapshot", "my-snapshot"])
+        result = runner.invoke(cli.cli, ["list"])
         self.assertEqual(result.exit_code, 0)
 
         # DATABASE_URL environment variable is used
@@ -234,7 +226,7 @@ class ConfigTest(TestCase):
             os.environ, {"DATABASE_URL": "postgres://envvar:pw@test:5432/my_db"}
         ):
             runner = CliRunner()
-            result = runner.invoke(cli.cli, ["snapshot", "my-snapshot"])
+            result = runner.invoke(cli.cli, ["list"])
             self.assertEqual(result.exit_code, 0)
 
             # TOML file is used
@@ -243,19 +235,14 @@ class ConfigTest(TestCase):
                 mock.mock_open(read_data=b"url = 'postgres://toml:pw@test:5432/my_db'"),
             ):
                 runner = CliRunner()
-                result = runner.invoke(cli.cli, ["snapshot", "my-snapshot"])
+                result = runner.invoke(cli.cli, ["list"])
                 self.assertEqual(result.exit_code, 0)
 
                 # --url option is used
                 runner = CliRunner()
                 result = runner.invoke(
                     cli.cli,
-                    [
-                        "--url",
-                        "postgres://cli:pw@test:5432/my_db",
-                        "snapshot",
-                        "my-snapshot",
-                    ],
+                    ["--url", "postgres://cli:pw@test:5432/my_db", "list"],
                 )
                 self.assertEqual(result.exit_code, 0)
 
