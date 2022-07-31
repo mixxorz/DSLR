@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from .config import settings
-from .runner import exec, exec_sql
+from .runner import exec_shell, exec_sql
 
 Snapshot = namedtuple("Snapshot", ["dbname", "name", "created_at"])
 
@@ -30,17 +30,11 @@ def kill_connections(dbname: str):
     """
     Kills all connections to the given database
     """
-    result = exec(
-        "psql",
-        "-d",
-        "postgres",
-        "-c",
-        "SELECT pg_terminate_backend(pg_stat_activity.pid) "
-        f"FROM pg_stat_activity WHERE pg_stat_activity.datname = '{dbname}'",
+    exec_sql(
+        "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity "
+        "WHERE pg_stat_activity.datname = %s",
+        [dbname],
     )
-
-    if result.returncode != 0:
-        raise DSLRException(result.stderr)
 
 
 def get_snapshots() -> List[Snapshot]:
@@ -99,22 +93,17 @@ def create_snapshot(snapshot_name: str):
     """
     kill_connections(settings.db.name)
 
-    result = exec(
-        "createdb", "-T", settings.db.name, generate_snapshot_db_name(snapshot_name)
+    exec_sql(
+        "CREATE DATABASE %s TEMPLATE %s",
+        [generate_snapshot_db_name(snapshot_name), settings.db.name],
     )
-
-    if result.returncode != 0:
-        raise DSLRException(result.stderr)
 
 
 def delete_snapshot(snapshot: Snapshot):
     """
     Deletes the given snapshot
     """
-    result = exec("dropdb", snapshot.dbname)
-
-    if result.returncode != 0:
-        raise DSLRException(result.stderr)
+    exec_sql("DROP DATABASE %s", [snapshot.dbname])
 
 
 def restore_snapshot(snapshot: Snapshot):
@@ -123,30 +112,15 @@ def restore_snapshot(snapshot: Snapshot):
     """
     kill_connections(settings.db.name)
 
-    result = exec("dropdb", settings.db.name)
-
-    if result.returncode != 0:
-        raise DSLRException(result.stderr)
-
-    result = exec("createdb", "-T", snapshot.dbname, settings.db.name)
-
-    if result.returncode != 0:
-        raise DSLRException(result.stderr)
+    exec_sql("DROP DATABASE %s", [settings.db.name])
+    exec_sql("CREATE DATABASE %s TEMPLATE %s", [settings.db.name, snapshot.dbname])
 
 
 def rename_snapshot(snapshot: Snapshot, new_name: str):
     """
     Renames the given snapshot
     """
-    result = exec(
-        "psql",
-        "-c",
-        f'ALTER DATABASE "{snapshot.dbname}" RENAME TO '
-        f'"{generate_snapshot_db_name(new_name, snapshot.created_at)}"',
-    )
-
-    if result.returncode != 0:
-        raise DSLRException(result.stderr)
+    exec_sql("ALTER DATABASE %s RENAME TO %s", [snapshot.dbname, new_name])
 
 
 def export_snapshot(snapshot: Snapshot) -> str:
@@ -154,7 +128,7 @@ def export_snapshot(snapshot: Snapshot) -> str:
     Exports the given snapshot to a file
     """
     export_path = f"{snapshot.name}_{snapshot.created_at:%Y%m%d-%H%M%S}.dump"
-    result = exec("pg_dump", "-Fc", "-d", snapshot.dbname, "-f", export_path)
+    result = exec_shell("pg_dump", "-Fc", "-d", snapshot.dbname, "-f", export_path)
 
     if result.returncode != 0:
         raise DSLRException(result.stderr)
@@ -167,12 +141,11 @@ def import_snapshot(import_path: str, snapshot_name: str):
     Imports the given snapshot from a file
     """
     db_name = generate_snapshot_db_name(snapshot_name)
-    result = exec("createdb", db_name)
+    exec_sql("CREATE DATABASE %s", [db_name])
 
-    if result.returncode != 0:
-        raise DSLRException(result.stderr)
-
-    result = exec("pg_restore", "-d", db_name, "--no-acl", "--no-owner", import_path)
+    result = exec_shell(
+        "pg_restore", "-d", db_name, "--no-acl", "--no-owner", import_path
+    )
 
     if result.returncode != 0:
         raise DSLRException(result.stderr)

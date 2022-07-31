@@ -1,7 +1,7 @@
 import os
 import subprocess
 from collections import namedtuple
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 from dslr.pg_client import PGClient
 
@@ -11,7 +11,7 @@ from .console import console
 Result = namedtuple("Result", ["returncode", "stdout", "stderr"])
 
 
-def exec(*cmd: str) -> Result:
+def exec_shell(*cmd: str) -> Result:
     """
     Executes a command.
     """
@@ -50,13 +50,16 @@ def exec(*cmd: str) -> Result:
 pg_client: Optional[PGClient] = None
 
 
-def exec_sql(sql: str, data: Optional[Dict[Any, Any]] = None) -> List[Tuple[Any, ...]]:
+def exec_sql(sql: str, data: Optional[List[Any]] = None) -> List[Tuple[Any, ...]]:
     """
     Executes a SQL query.
     """
     global pg_client
 
     if not pg_client:
+        # We always want to connect to the `postgres` and not the target
+        # database because all of our operations don't need to query the target
+        # database.
         pg_client = PGClient(
             host=settings.db.host,
             port=settings.db.port,

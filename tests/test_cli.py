@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from typing import Any, List, Optional, Tuple
 from unittest import TestCase, mock
 
 from click.testing import CliRunner
@@ -7,28 +8,25 @@ from click.testing import CliRunner
 from dslr import cli, operations, runner
 
 
-def stub_exec(*cmd: str):
-    # Set up fake snapshots
-    if "SELECT datname FROM pg_database" in cmd:
-        fake_snapshot_1 = operations.generate_snapshot_db_name(
-            "existing-snapshot-1",
-            created_at=datetime(2020, 1, 1, 0, 0, 0, 0),
-        )
-        fake_snapshot_2 = operations.generate_snapshot_db_name(
-            "existing-snapshot-2",
-            created_at=datetime(2020, 1, 2, 0, 0, 0, 0),
-        )
-        return runner.Result(
-            returncode=0,
-            stdout="\n".join([fake_snapshot_1, fake_snapshot_2]),
-            stderr="",
-        )
-
+def stub_exec_shell(*cmd: str):
     return runner.Result(returncode=0, stdout="", stderr="")
 
 
+def stub_exec_sql(sql: str, data: Optional[List[Any]] = None) -> List[Tuple[Any, ...]]:
+    fake_snapshot_1 = operations.generate_snapshot_db_name(
+        "existing-snapshot-1",
+        created_at=datetime(2020, 1, 1, 0, 0, 0, 0),
+    )
+    fake_snapshot_2 = operations.generate_snapshot_db_name(
+        "existing-snapshot-2",
+        created_at=datetime(2020, 1, 2, 0, 0, 0, 0),
+    )
+    return [(fake_snapshot_1,), (fake_snapshot_2,)]
+
+
 @mock.patch.dict(os.environ, {"DATABASE_URL": "postgres://user:pw@test:5432/my_db"})
-@mock.patch("dslr.operations.exec", new=stub_exec)
+@mock.patch("dslr.operations.exec_shell", new=stub_exec_shell)
+@mock.patch("dslr.operations.exec_sql", new=stub_exec_sql)
 class CliTest(TestCase):
     def test_executes(self):
         runner = CliRunner()
@@ -168,7 +166,8 @@ class CliTest(TestCase):
         )
 
 
-@mock.patch("dslr.operations.exec", new=stub_exec)
+@mock.patch("dslr.operations.exec_shell", new=stub_exec_shell)
+@mock.patch("dslr.operations.exec_sql", new=stub_exec_sql)
 class ConfigTest(TestCase):
     @mock.patch.dict(
         os.environ, {"DATABASE_URL": "postgres://envvar:pw@test:5432/my_db"}
