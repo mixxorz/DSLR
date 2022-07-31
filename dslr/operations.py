@@ -7,11 +7,6 @@ from psycopg2 import sql
 from .config import settings
 from .runner import exec_shell, exec_sql
 
-
-class DSLRException(Exception):
-    pass
-
-
 ################################################################################
 # Database operations
 ################################################################################
@@ -166,10 +161,7 @@ def export_snapshot(snapshot: Snapshot) -> str:
     Exports the given snapshot to a file
     """
     export_path = f"{snapshot.name}_{snapshot.created_at:%Y%m%d-%H%M%S}.dump"
-    result = exec_shell("pg_dump", "-Fc", "-d", snapshot.dbname, "-f", export_path)
-
-    if result.returncode != 0:
-        raise DSLRException(result.stderr)
+    exec_shell("pg_dump", "-Fc", "-d", snapshot.dbname, "-f", export_path)
 
     return export_path
 
@@ -181,9 +173,4 @@ def import_snapshot(import_path: str, snapshot_name: str):
     dbname = generate_snapshot_db_name(snapshot_name)
     create_database(dbname=dbname)
 
-    result = exec_shell(
-        "pg_restore", "-d", dbname, "--no-acl", "--no-owner", import_path
-    )
-
-    if result.returncode != 0:
-        raise DSLRException(result.stderr)
+    exec_shell("pg_restore", "-d", dbname, "--no-acl", "--no-owner", import_path)

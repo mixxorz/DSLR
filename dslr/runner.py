@@ -10,7 +10,7 @@ from dslr.pg_client import PGClient
 from .config import settings
 from .console import console
 
-Result = namedtuple("Result", ["returncode", "stdout", "stderr"])
+Result = namedtuple("Result", ["stdout", "stderr"])
 
 
 def exec_shell(*cmd: str) -> Result:
@@ -40,9 +40,10 @@ def exec_shell(*cmd: str) -> Result:
             console.log("STDOUT:\n", stdout.decode("utf-8"), "\n")
             console.log("STDERR:\n", stderr.decode("utf-8"), "\n")
 
-        # TODO: Make this raise an exception instead
+        if p.returncode != 0:
+            raise RuntimeError(f"Command failed: {cmd}")
+
         return Result(
-            returncode=p.returncode,
             stdout=stdout.decode("utf-8"),
             stderr=stderr.decode("utf-8"),
         )
