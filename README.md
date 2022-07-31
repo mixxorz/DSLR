@@ -128,9 +128,9 @@ environment variables.
 url: postgres://username:password@host:port/database_name
 ```
 
-**`--db` option**
+**`--url` option**
 
-Finally, you can explicitly pass the connection string via the `--db` option.
+Finally, you can explicitly pass the connection string via the `--url` option.
 This will override any of the above settings.
 
 ## Usage

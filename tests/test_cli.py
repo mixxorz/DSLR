@@ -170,7 +170,9 @@ class CliTest(TestCase):
 
 @mock.patch("dslr.operations.exec", new=stub_exec)
 class ConfigTest(TestCase):
-    @mock.patch.dict(os.environ, {"DATABASE_URL": "postgres://user:pw@test:5432/my_db"})
+    @mock.patch.dict(
+        os.environ, {"DATABASE_URL": "postgres://envvar:pw@test:5432/my_db"}
+    )
     @mock.patch("dslr.cli.settings")
     @mock.patch("dslr.operations.settings")
     def test_database_url(self, mock_operations_settings, mock_cli_settings):
@@ -182,7 +184,25 @@ class ConfigTest(TestCase):
 
         mock_cli_settings.initialize.assert_called_once_with(
             debug=False,
-            url="postgres://user:pw@test:5432/my_db",
+            url="postgres://envvar:pw@test:5432/my_db",
+        )
+
+    @mock.patch("dslr.cli.settings")
+    @mock.patch("dslr.operations.settings")
+    def test_toml(self, mock_operations_settings, mock_cli_settings):
+        with mock.patch(
+            "builtins.open",
+            mock.mock_open(read_data=b"url = 'postgres://toml:pw@test:5432/my_db'"),
+        ):
+            runner = CliRunner()
+            result = runner.invoke(cli.cli, ["snapshot", "my-snapshot"])
+
+        self.assertEqual(result.exit_code, 0)
+        self.assertTrue(result.output)
+
+        mock_cli_settings.initialize.assert_called_once_with(
+            debug=False,
+            url="postgres://toml:pw@test:5432/my_db",
         )
 
     @mock.patch("dslr.cli.settings")
@@ -191,7 +211,7 @@ class ConfigTest(TestCase):
         runner = CliRunner()
         result = runner.invoke(
             cli.cli,
-            ["--db", "postgres://user:pw@test:5432/my_db", "snapshot", "my-snapshot"],
+            ["--url", "postgres://cli:pw@test:5432/my_db", "snapshot", "my-snapshot"],
         )
 
         self.assertEqual(result.exit_code, 0)
@@ -199,5 +219,8 @@ class ConfigTest(TestCase):
 
         mock_cli_settings.initialize.assert_called_once_with(
             debug=False,
-            url="postgres://user:pw@test:5432/my_db",
+            url="postgres://cli:pw@test:5432/my_db",
         )
+
+    def test_settings_preference_order(self):
+        self.fail()
