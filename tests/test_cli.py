@@ -8,7 +8,7 @@ from click.testing import CliRunner
 from dslr import cli, operations, runner
 
 
-def stub_exec_shell(*args, **kwargs):
+def stub_exec_shell(*args, **kwargs) -> runner.Result:
     return runner.Result(stdout="", stderr="")
 
 

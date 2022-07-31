@@ -63,7 +63,7 @@ def exec_sql(
 
     if not pg_client:
         # We always want to connect to the `postgres` and not the target
-        # database because all of our operations don't need to query the target
+        # database because none of our operations need to query the target
         # database.
         pg_client = PGClient(
             host=settings.db.host,
