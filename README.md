@@ -2,7 +2,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/mixxorz/DSLR">
-    <img width="281" height="84" src="https://user-images.githubusercontent.com/3102758/181914025-44bff27e-aac1-4d1b-a037-9fa98f9fed65.png">
+    <img width="281" height="84" src="https://user-images.githubusercontent.com/3102758/181914025-44bff27e-aac1-4d1b-a037-9fa98f9fed65.png" alt="The DSLR logo">
   </a>
 </p>
 <br />
@@ -14,7 +14,10 @@
   <a href="https://github.com/mixxorz/dslr"><img src="https://github.com/mixxorz/dslr/actions/workflows/tests.yml/badge.svg" alt="GitHub Actions (Code quality and tests)"></a>
 
 </p>
-<br />
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/3102758/183229767-4501e6aa-e1cf-43c7-bd55-61faaa249ca2.png" alt="A terminal showing DSLR's command line interface.">
+</p>
 
 ---
 
