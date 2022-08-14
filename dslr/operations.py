@@ -81,6 +81,9 @@ def get_snapshots() -> List[Snapshot]:
     # Find the snapshot databases
     result = exec_sql("SELECT datname FROM pg_database WHERE datname LIKE 'dslr_%'")
 
+    if not result:
+        raise RuntimeError("Did not get results from database.")
+
     snapshot_dbnames = sorted([row[0] for row in result])
 
     # Parse the name into a Snapshot

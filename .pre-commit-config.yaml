@@ -11,3 +11,11 @@ repos:
     rev: 22.6.0
     hooks:
       - id: black
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright
+        entry: poetry run npx pyright@1.1.266
+        language: node
+        pass_filenames: false
+        types: [python]

@@ -1,6 +1,7 @@
 from typing import Any, List, Optional, Tuple
 
 import psycopg2
+import psycopg2.extensions
 
 from dslr.console import console
 
