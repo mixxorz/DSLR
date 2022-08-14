@@ -54,7 +54,7 @@ pg_client: Optional[PGClient] = None
 
 
 def exec_sql(
-    sql: Union[sql.SQL, str], data: Optional[List[Any]] = None
+    sql: Union[sql.Composed, str], data: Optional[List[Any]] = None
 ) -> Optional[List[Tuple[Any, ...]]]:
     """
     Executes a SQL query.
