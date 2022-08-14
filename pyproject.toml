@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "DSLR"
-version = "0.2.0"
+version = "0.3.0"
 description = "Take lightning fast snapshots of your local Postgres databases."
 authors = ["Mitchel Cabuloy <mixxorz@gmail.com>"]
 license = "MIT"
