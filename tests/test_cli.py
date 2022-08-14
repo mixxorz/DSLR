@@ -54,6 +54,20 @@ class CliTest(TestCase):
         )
         self.assertIn("Updated snapshot existing-snapshot-1", result.output)
 
+    def test_snapshot_overwrite_with_yes(self):
+        # stub_exec sets up a fake snapshot called "existing-snapshot-1"
+        runner = CliRunner()
+        result = runner.invoke(
+            cli.cli,
+            ["snapshot", "existing-snapshot-1", "-y"],
+        )
+
+        self.assertEqual(result.exit_code, 0)
+        self.assertNotIn(
+            "Snapshot existing-snapshot-1 already exists. Overwrite?", result.output
+        )
+        self.assertIn("Updated snapshot existing-snapshot-1", result.output)
+
     def test_restore(self):
         runner = CliRunner()
         result = runner.invoke(cli.cli, ["restore", "existing-snapshot-1"])
@@ -118,6 +132,20 @@ class CliTest(TestCase):
             "Renamed snapshot existing-snapshot-1 to existing-snapshot-2", result.output
         )
 
+    def test_rename_overwrite_with_yes(self):
+        runner = CliRunner()
+        result = runner.invoke(
+            cli.cli, ["rename", "existing-snapshot-1", "existing-snapshot-2", "-y"]
+        )
+
+        self.assertEqual(result.exit_code, 0)
+        self.assertNotIn(
+            "Snapshot existing-snapshot-2 already exists. Overwrite?", result.output
+        )
+        self.assertIn(
+            "Renamed snapshot existing-snapshot-1 to existing-snapshot-2", result.output
+        )
+
     def test_export(self):
         runner = CliRunner()
         result = runner.invoke(cli.cli, ["export", "existing-snapshot-1"])
@@ -158,6 +186,21 @@ class CliTest(TestCase):
 
         self.assertEqual(result.exit_code, 0)
         self.assertIn(
+            "Snapshot existing-snapshot-1 already exists. Overwrite?", result.output
+        )
+        self.assertIn(
+            "Imported snapshot existing-snapshot-1 from pyproject.toml",
+            result.output,
+        )
+
+    def test_import_overwrite_with_yes(self):
+        runner = CliRunner()
+        result = runner.invoke(
+            cli.cli, ["import", "pyproject.toml", "existing-snapshot-1", "-y"]
+        )
+
+        self.assertEqual(result.exit_code, 0)
+        self.assertNotIn(
             "Snapshot existing-snapshot-1 already exists. Overwrite?", result.output
         )
         self.assertIn(
