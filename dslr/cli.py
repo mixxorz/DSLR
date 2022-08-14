@@ -75,7 +75,14 @@ def cli(url, debug):
 
 @cli.command()
 @click.argument("name", shell_complete=complete_snapshot_names)
-def snapshot(name: str):
+@click.option(
+    "-y",
+    "--yes",
+    "overwrite_confirmed",
+    is_flag=True,
+    help="Overwrite existing snapshot without confirmation.",
+)
+def snapshot(name: str, overwrite_confirmed: bool):
     """
     Takes a snapshot of the database
     """
@@ -84,12 +91,13 @@ def snapshot(name: str):
     try:
         snapshot = find_snapshot(name)
 
-        click.confirm(
-            click.style(
-                f"Snapshot {snapshot.name} already exists. Overwrite?", fg="yellow"
-            ),
-            abort=True,
-        )
+        if not overwrite_confirmed:
+            click.confirm(
+                click.style(
+                    f"Snapshot {snapshot.name} already exists. Overwrite?", fg="yellow"
+                ),
+                abort=True,
+            )
 
         delete_snapshot(snapshot)
         new = False
@@ -184,7 +192,14 @@ def delete(name):
 @cli.command()
 @click.argument("old_name", shell_complete=complete_snapshot_names)
 @click.argument("new_name", shell_complete=complete_snapshot_names)
-def rename(old_name, new_name):
+@click.option(
+    "-y",
+    "--yes",
+    "overwrite_confirmed",
+    is_flag=True,
+    help="Overwrite existing snapshot without confirmation.",
+)
+def rename(old_name: str, new_name: str, overwrite_confirmed: bool):
     """
     Renames a snapshot
     """
@@ -197,13 +212,14 @@ def rename(old_name, new_name):
     try:
         existing_snapshot = find_snapshot(new_name)
 
-        click.confirm(
-            click.style(
-                f"Snapshot {existing_snapshot.name} already exists. Overwrite?",
-                fg="yellow",
-            ),
-            abort=True,
-        )
+        if not overwrite_confirmed:
+            click.confirm(
+                click.style(
+                    f"Snapshot {existing_snapshot.name} already exists. Overwrite?",
+                    fg="yellow",
+                ),
+                abort=True,
+            )
 
         delete_snapshot(existing_snapshot)
     except SnapshotNotFound:
@@ -245,7 +261,14 @@ def export(name):
 @cli.command("import")
 @click.argument("filename", type=click.Path(exists=True))
 @click.argument("name", shell_complete=complete_snapshot_names)
-def import_(filename, name):
+@click.option(
+    "-y",
+    "--yes",
+    "overwrite_confirmed",
+    is_flag=True,
+    help="Overwrite existing snapshot without confirmation.",
+)
+def import_(filename: str, name: str, overwrite_confirmed):
     """
     Imports a snapshot from a file
     """
@@ -254,12 +277,13 @@ def import_(filename, name):
     try:
         snapshot = find_snapshot(name)
 
-        click.confirm(
-            click.style(
-                f"Snapshot {snapshot.name} already exists. Overwrite?", fg="yellow"
-            ),
-            abort=True,
-        )
+        if not overwrite_confirmed:
+            click.confirm(
+                click.style(
+                    f"Snapshot {snapshot.name} already exists. Overwrite?", fg="yellow"
+                ),
+                abort=True,
+            )
 
         delete_snapshot(snapshot)
     except SnapshotNotFound:
