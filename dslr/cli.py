@@ -160,9 +160,10 @@ def list():
     table = Table(box=box.SIMPLE)
     table.add_column("Name", style="cyan")
     table.add_column("Created")
+    table.add_column("Size", justify="right")
 
     for snapshot in sorted(snapshots, key=lambda s: s.created_at, reverse=True):
-        table.add_row(snapshot.name, timeago.format(snapshot.created_at))
+        table.add_row(snapshot.name, timeago.format(snapshot.created_at), snapshot.size)
 
     cprint(table)
 

@@ -53,7 +53,7 @@ def drop_database(dbname: str):
 # Snapshot operations
 ################################################################################
 
-Snapshot = namedtuple("Snapshot", ["dbname", "name", "created_at"])
+Snapshot = namedtuple("Snapshot", ["dbname", "name", "created_at", "size"])
 
 
 def generate_snapshot_db_name(
@@ -79,22 +79,27 @@ def get_snapshots() -> List[Snapshot]:
     dslr_<timestamp>_<snapshot_name>
     """
     # Find the snapshot databases
-    result = exec_sql("SELECT datname FROM pg_database WHERE datname LIKE 'dslr_%'")
+    result = exec_sql(
+        """
+        SELECT
+            datname,
+            pg_size_pretty(pg_database_size(datname))
+        FROM pg_database
+        WHERE datname LIKE 'dslr_%'
+        """
+    )
 
     if result is None:
         raise RuntimeError("Did not get results from database.")
 
-    snapshot_dbnames = sorted([row[0] for row in result])
-
-    # Parse the name into a Snapshot
-    parts = [dbname.split("_") for dbname in snapshot_dbnames]
     return [
         Snapshot(
             dbname=line,
             name="_".join(part[2:]),
             created_at=datetime.fromtimestamp(int(part[1])),
+            size=size,
         )
-        for part, line in zip(parts, snapshot_dbnames)
+        for line, part, size in [(row[0], row[0].split("_"), row[1]) for row in result]
     ]
 
 
