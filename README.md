@@ -249,6 +249,10 @@ database as the template. Restoring a snapshot is just deleting the main
 database and creating a new database using the snapshot database as the
 template. So on and so forth.
 
+## Contributors
+
+[![Contributors](https://contrib.rocks/image?repo=mixxorz/DSLR)](https://github.com/mixxorz/DSLR/graphs/contributors)
+
 ## License
 
 MIT
