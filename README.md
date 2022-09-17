@@ -96,12 +96,92 @@ Here's the raw data:
 
 ```
 
-pip install DSLR[psycopg2] # or psycopg2-binary, pipx is also supported
+pip install DSLR psycopg2 # or psycopg2-binary
 
 ```
 
-Additionally, the DSLR `export` and `import` snapshot commands require `pg_dump`
-and `pg_restore` to be present in your `PATH`.
+**Install using pipx**
+
+```
+
+pipx install DSLR[psycopg2] # or psycopg2-binary
+
+````
+
+Note: The DSLR `export` and `import` snapshot commands require `pg_dump` and
+`pg_restore` to be present in your `PATH`, so you will need the Postgres CLI
+utilities if you want to use those commands.
+
+<details>
+  <summary><strong>Shell completion</strong></summary>
+
+**Bash**
+
+Add this to `~/.bashrc`:
+
+```
+eval "$(_DSLR_COMPLETE=bash_source dslr)"
+```
+
+**Zsh**
+
+Add this to `~/.zshrc`:
+
+```
+eval "$(_DSLR_COMPLETE=zsh_source dslr)"
+```
+
+**Fish**
+
+Add this to `~/.config/fish/completions/dslr.fish`:
+
+```
+eval (env _DSLR_COMPLETE=fish_source dslr)
+```
+
+This is the same file used for the activation script method below. For Fish it’s probably always easier to use that method.
+
+Using eval means that the command is invoked and evaluated every time a shell is started, which can delay shell responsiveness. To speed it up, write the generated script to a file, then source that.
+
+**Bash**
+
+Save the script somewhere.
+
+```
+_DSLR_COMPLETE=bash_source dslr > ~/.dslr-complete.bash
+```
+
+Source the file in ~/.bashrc.
+
+```
+. ~/.dslr-complete.bash
+```
+
+**Zsh**
+
+Save the script somewhere.
+
+```
+_DSLR_COMPLETE=zsh_source dslr > ~/.dslr-complete.zsh
+```
+
+Source the file in ~/.zshrc.
+
+```
+. ~/.dslr-complete.zsh
+```
+
+**Fish**
+
+Save the script to ~/.config/fish/completions/foo-bar.fish:
+
+```
+_DSLR_COMPLETE=fish_source dslr > ~/.config/fish/completions/dslr.fish
+```
+
+</details>
+
+
 
 ## Configuration
 
