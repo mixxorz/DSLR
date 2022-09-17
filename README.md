@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/3102758/183229767-4501e6aa-e1cf-43c7-bd55-61faaa249ca2.png" alt="A terminal showing DSLR's command line interface.">
+  <img src="https://user-images.githubusercontent.com/3102758/190845105-dd2ec4e6-286b-431d-a33d-490805852b68.png" alt="A terminal showing DSLR's command line interface.">
 </p>
 
 ---
@@ -221,9 +221,9 @@ Restored database from snapshot my-first-snapshot
 
 $ dslr list
 
-  Name                Created
- ────────────────────────────────────
-  my-first-snapshot   2 minutes ago
+  Name                Created            Size
+ ─────────────────────────────────────────────
+  my-first-snapshot   2 minutes ago   3253 kB
 
 $ dslr rename my-first-snapshot fresh-db
 Renamed snapshot my-first-snapshot to fresh-db
