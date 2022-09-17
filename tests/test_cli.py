@@ -21,7 +21,7 @@ def stub_exec_sql(*args, **kwargs) -> List[Tuple[Any, ...]]:
         "existing-snapshot-2",
         created_at=datetime(2020, 1, 2, 0, 0, 0, 0),
     )
-    return [(fake_snapshot_1,), (fake_snapshot_2,)]
+    return [(fake_snapshot_1, "100 kB"), (fake_snapshot_2, "100 kB")]
 
 
 @mock.patch.dict(os.environ, {"DATABASE_URL": "postgres://user:pw@test:5432/my_db"})
