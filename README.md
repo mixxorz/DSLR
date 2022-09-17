@@ -96,9 +96,9 @@ Here's the raw data:
 
 ```
 
-pip install DSLR psycopg2 # or psycopg2-binary
+pip install DSLR[psycopg2] # or psycopg2-binary, pipx is also supported
 
-````
+```
 
 Additionally, the DSLR `export` and `import` snapshot commands require `pg_dump`
 and `pg_restore` to be present in your `PATH`.
