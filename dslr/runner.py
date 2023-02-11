@@ -62,7 +62,7 @@ def exec_sql(
     global pg_client
 
     if not pg_client:
-        # We always want to connect to the `postgres` and not the target
+        # We always want to connect to the `template1` and not the target
         # database because none of our operations need to query the target
         # database.
         pg_client = PGClient(
@@ -70,7 +70,7 @@ def exec_sql(
             port=settings.db.port,
             user=settings.db.username,
             password=settings.db.password,
-            dbname="postgres",
+            dbname="template1",
         )
 
     return pg_client.execute(sql, data)
