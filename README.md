@@ -238,6 +238,13 @@ $ dslr import snapshot-from-a-friend_20220730-080632.dump friend-snapshot
 Imported snapshot friend-snapshot from snapshot-from-a-friend_20220730-080632.dump
 ```
 
+To force overwriting an existing snapshot in non-interactive shell use the flag `-y`:
+
+```
+$ dslr snapshot my-first-snapshot -y
+Updated snapshot my-first-snapshot
+```
+
 ## How does it work?
 
 DSLR takes snapshots by cloning databases using Postgres' [Template
