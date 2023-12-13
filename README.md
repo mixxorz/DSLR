@@ -96,7 +96,7 @@ Here's the raw data:
 
 ```
 
-pip install DSLR psycopg2 # or psycopg2-binary
+pip install DSLR psycopg2 # or psycopg2-binary, or psycopg
 
 ```
 
@@ -104,7 +104,7 @@ pip install DSLR psycopg2 # or psycopg2-binary
 
 ```
 
-pipx install DSLR[psycopg2] # or psycopg2-binary
+pipx install DSLR[psycopg2] # or psycopg2-binary, or psycopg
 
 ````
 
