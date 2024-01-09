@@ -338,9 +338,7 @@ class ConfigTest(TestCase):
                     self.assertEqual(result.exit_code, 0)
 
                     self.assertEqual(1, mock_database_connection.call_count)
-                    self.assertEqual(
-                        mock_database_connection.call_args.kwargs["username"], username
-                    )
-                    self.assertEqual(
-                        mock_database_connection.call_args.kwargs["password"], password
-                    )
+
+                    _, call_kwargs = mock_database_connection.call_args
+                    self.assertEqual(call_kwargs["username"], username)
+                    self.assertEqual(call_kwargs["password"], password)
