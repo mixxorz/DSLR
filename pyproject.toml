@@ -32,6 +32,7 @@ dev = [
     "pre-commit>=4.0.1",
     "ruff>=0.7.0",
     "ipdb<1.0.0,>=0.13.9",
+    "psycopg[binary]>=3.2.6",
     "tox<4.0.0,>=3.25.1",
     "twine<5.0.0,>=4.0.1",
 ]
@@ -39,14 +40,6 @@ dev = [
 [project.urls]
 homepage = "https://github.com/mixxorz/DSLR"
 repository = "https://github.com/mixxorz/DSLR"
-
-[project.optional-dependencies]
-psycopg2 = [
-    "psycopg2<3.0.0,>=2.9.3",
-]
-psycopg2-binary = [
-    "psycopg2-binary<3.0.0,>=2.9.3",
-]
 
 [project.scripts]
 dslr = "dslr.cli:cli"
