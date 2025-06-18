@@ -1,7 +1,10 @@
 from typing import Any, List, Optional, Tuple
 
-import psycopg2
-import psycopg2.extensions
+try:
+    import psycopg as psycopg
+except ImportError:
+    import psycopg2 as psycopg
+    import psycopg2.extensions
 
 from dslr.console import console
 
@@ -20,16 +23,23 @@ class PGClient:
         self.password = password
         self.dbname = dbname
 
-        self.conn = psycopg2.connect(
+        self.conn = psycopg.connect(
             host=host,
             port=port,
             user=user,
             password=password,
             dbname=dbname,
         )
-        self.conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-
+        self._set_autocommit()
         self.cur = self.conn.cursor()
+
+    def _set_autocommit(self):
+        if hasattr(self.conn, "set_autocommit"):
+            self.conn.set_autocommit(True)  # type: ignore
+        else:
+            self.conn.set_isolation_level(  # type: ignore
+                psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
+            )
 
     def execute(self, sql, data) -> Optional[List[Tuple[Any, ...]]]:
         if settings.debug:
@@ -40,7 +50,7 @@ class PGClient:
 
         try:
             result = self.cur.fetchall()
-        except psycopg2.ProgrammingError:
+        except psycopg.ProgrammingError:
             result = None
 
         return result

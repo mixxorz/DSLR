@@ -3,7 +3,10 @@ import subprocess
 from collections import namedtuple
 from typing import Any, List, Optional, Tuple, Union
 
-from psycopg2 import sql
+try:
+    from psycopg import sql
+except ImportError:
+    from psycopg2 import sql
 
 from dslr.pg_client import PGClient
 
