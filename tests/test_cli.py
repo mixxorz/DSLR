@@ -68,6 +68,14 @@ class CliTest(TestCase):
         )
         self.assertIn("Updated snapshot existing-snapshot-1", result.output)
 
+    @mock.patch.dict(os.environ, {"DATABASE_URL": ""})
+    def test_snapshot_with_missing_database_url(self):
+        runner = CliRunner()
+        result = runner.invoke(cli.cli, ["snapshot", "my-snapshot"])
+
+        self.assertEqual(result.exit_code, 1)
+        self.assertIn("Database name cannot be empty", result.output)
+
     def test_restore(self):
         runner = CliRunner()
         result = runner.invoke(cli.cli, ["restore", "existing-snapshot-1"])
@@ -83,6 +91,14 @@ class CliTest(TestCase):
 
         self.assertEqual(result.exit_code, 1)
         self.assertIn("Snapshot not-found does not exist", result.output)
+
+    @mock.patch.dict(os.environ, {"DATABASE_URL": ""})
+    def test_restore_with_missing_database_url(self):
+        runner = CliRunner()
+        result = runner.invoke(cli.cli, ["restore", "existing-snapshot-1"])
+
+        self.assertEqual(result.exit_code, 1)
+        self.assertIn("Database name cannot be empty", result.output)
 
     def test_list(self):
         runner = CliRunner()
