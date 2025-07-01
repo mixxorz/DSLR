@@ -36,7 +36,7 @@ psycopg = ["psycopg"]
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.11.5"
-flake8 = "^4.0.1"
+flake8 = "^7.3.0"
 black = "^22.6.0"
 ipdb = "^0.13.9"
 tox = "^4"

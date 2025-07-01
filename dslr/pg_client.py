@@ -13,7 +13,7 @@ from .config import settings
 
 class PGClient:
     """
-    Thin wrapper around psycopg2
+    Thin wrapper around psycopg
     """
 
     def __init__(self, host, port, user, password, dbname):
@@ -38,7 +38,7 @@ class PGClient:
             self.conn.set_autocommit(True)  # type: ignore
         else:
             self.conn.set_isolation_level(  # type: ignore
-                psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
+                psycopg.extensions.ISOLATION_LEVEL_AUTOCOMMIT
             )
 
     def execute(self, sql, data) -> Optional[List[Tuple[Any, ...]]]:
