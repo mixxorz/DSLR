@@ -2,7 +2,10 @@ from collections import namedtuple
 from datetime import datetime
 from typing import List, Optional
 
-from psycopg2 import sql
+try:
+    from psycopg import sql
+except ImportError:
+    from psycopg2 import sql
 
 from .config import settings
 from .runner import exec_shell, exec_sql
