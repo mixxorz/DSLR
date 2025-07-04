@@ -73,6 +73,12 @@ def cli(url, debug):
     settings.initialize(**config)
 
 
+def check_database_name():
+    if not settings.db.name:
+        eprint("Database name cannot be empty", style="red")
+        sys.exit(1)
+
+
 @cli.command()
 @click.argument("name", shell_complete=complete_snapshot_names)
 @click.option(
@@ -87,6 +93,7 @@ def snapshot(name: str, overwrite_confirmed: bool):
     Takes a snapshot of the database
     """
     new = True
+    check_database_name()
 
     try:
         snapshot = find_snapshot(name)
@@ -124,6 +131,8 @@ def restore(name):
     """
     Restores the database from a snapshot
     """
+    check_database_name()
+
     try:
         snapshot = find_snapshot(name)
     except SnapshotNotFound:
