@@ -1,7 +1,9 @@
 import os
 from datetime import datetime
+from itertools import product
 from typing import Any, List, Tuple
 from unittest import TestCase, mock
+from urllib.parse import quote
 
 from click.testing import CliRunner
 
@@ -306,3 +308,38 @@ class ConfigTest(TestCase):
                 mock.call(debug=False, url="postgres://cli:pw@test:5432/my_db"),
             ],
         )
+
+    @mock.patch("dslr.config.DatabaseConnection")
+    def test_encoded_username_password(
+        self, mock_database_connection, mock_get_snapshots
+    ):
+        usernames = ["user", "user@example.com"]
+        passwords = ["pw", "f4A$#%&?!_@:asvb"]
+
+        for username, password in product(usernames, passwords):
+            with self.subTest(username=username, password=password):
+                mock_database_connection.reset_mock()
+
+                username_encoded = quote(username)
+                password_encoded = quote(password)
+
+                # DATABASE_URL environment variable is used
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "DATABASE_URL": (
+                            f"postgres://{username_encoded}:{password_encoded}"
+                            "@test:5432/my_db"
+                        )
+                    },
+                ):
+                    runner = CliRunner()
+                    result = runner.invoke(cli.cli, ["list"])
+
+                    self.assertEqual(result.exit_code, 0)
+
+                    self.assertEqual(1, mock_database_connection.call_count)
+
+                    _, call_kwargs = mock_database_connection.call_args
+                    self.assertEqual(call_kwargs["username"], username)
+                    self.assertEqual(call_kwargs["password"], password)
