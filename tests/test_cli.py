@@ -257,13 +257,16 @@ class ConfigTest(TestCase):
             url="postgres://cli:pw@test:5432/my_db",
         )
 
-    @mock.patch("dslr.cli.settings")
-    def test_settings_preference_order(self, mock_cli_settings, mock_get_snapshots):
-        # No options passed (e.g. PG environment variables are used)
+    @mock.patch.dict(os.environ, {}, clear=True)
+    def test_no_url(self, mock_get_snapshots):
         runner = CliRunner()
         result = runner.invoke(cli.cli, ["list"])
-        self.assertEqual(result.exit_code, 0)
 
+        self.assertEqual(result.exit_code, 1)
+        self.assertIn("No database URL specified", result.output)
+
+    @mock.patch("dslr.cli.settings")
+    def test_settings_preference_order(self, mock_cli_settings, mock_get_snapshots):
         # DATABASE_URL environment variable is used
         with mock.patch.dict(
             os.environ, {"DATABASE_URL": "postgres://envvar:pw@test:5432/my_db"}
@@ -272,31 +275,29 @@ class ConfigTest(TestCase):
             result = runner.invoke(cli.cli, ["list"])
             self.assertEqual(result.exit_code, 0)
 
-            # TOML file is used
-            with mock.patch(
-                "builtins.open",
-                mock.mock_open(read_data=b"url = 'postgres://toml:pw@test:5432/my_db'"),
-            ):
-                runner = CliRunner()
-                result = runner.invoke(cli.cli, ["list"])
-                self.assertEqual(result.exit_code, 0)
+        # TOML file is used
+        with mock.patch(
+            "builtins.open",
+            mock.mock_open(read_data=b"url = 'postgres://toml:pw@test:5432/my_db'"),
+        ):
+            runner = CliRunner()
+            result = runner.invoke(cli.cli, ["list"])
+            self.assertEqual(result.exit_code, 0)
 
-                # --url option is used
-                runner = CliRunner()
-                result = runner.invoke(
-                    cli.cli,
-                    ["--url", "postgres://cli:pw@test:5432/my_db", "list"],
-                )
-                self.assertEqual(result.exit_code, 0)
+        # --url option is used
+        runner = CliRunner()
+        result = runner.invoke(
+            cli.cli,
+            ["--url", "postgres://cli:pw@test:5432/my_db", "list"],
+        )
+        self.assertEqual(result.exit_code, 0)
 
         # Check that the correct order of settings is used
-        self.assertEqual(4, mock_cli_settings.initialize.call_count)
+        self.assertEqual(3, mock_cli_settings.initialize.call_count)
 
         self.assertEqual(
             mock_cli_settings.initialize.call_args_list,
             [
-                # Nothing is passed
-                mock.call(debug=False, url=""),
                 # DATABASE_URL is present so use that
                 mock.call(debug=False, url="postgres://envvar:pw@test:5432/my_db"),
                 # TOML is present, so use that over DATABASE_URL

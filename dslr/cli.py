@@ -70,7 +70,11 @@ def cli(url, debug):
     }
 
     # Update the settings singleton
-    settings.initialize(**config)
+    try:
+        settings.initialize(**config)
+    except ValueError as e:
+        eprint(e, style="red")
+        sys.exit(1)
 
 
 @cli.command()
