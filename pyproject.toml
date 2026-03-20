@@ -1,13 +1,18 @@
-[tool.poetry]
+[project]
 name = "DSLR"
 version = "0.6.0"
 description = "Take lightning fast snapshots of your local Postgres databases."
-authors = ["Mitchel Cabuloy <mixxorz@gmail.com>"]
-license = "MIT"
-keywords = ["database", "snapshot", "backup"]
 readme = "README.md"
-homepage = "https://github.com/mixxorz/DSLR"
-repository = "https://github.com/mixxorz/DSLR"
+license = {text = "MIT"}
+requires-python = ">=3.10,<4.0"
+authors = [
+    {name = "Mitchel Cabuloy", email = "mixxorz@gmail.com"},
+]
+keywords = [
+    "database",
+    "snapshot",
+    "backup",
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -15,39 +20,47 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Topic :: Database",
 ]
-include = [
-    "LICENSE",
+dependencies = [
+    "click>=8.1.3,<9",
+    "rich>=13.8.1,<14",
+    "timeago>=1.0.15,<2",
+    "tomli>=2.0.1,<3; python_version < '3.11'",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-click = "^8.1.3"
-rich = "^13.8.1"
-timeago = "^1.0.15"
-tomli = "^2.0.1"
-psycopg2 = { version = "^2.9.3", optional = true }
-psycopg2-binary = { version = "^2.9.3", optional = true }
-psycopg = { version = "^3.1.14", optional = true }
+[project.optional-dependencies]
+psycopg2 = ["psycopg2>=2.9.3,<3"]
+psycopg2-binary = ["psycopg2-binary>=2.9.3,<3"]
+psycopg = ["psycopg>=3.1.14,<4"]
 
-[tool.poetry.extras]
-psycopg2 = ["psycopg2"]
-psycopg2-binary = ["psycopg2-binary"]
-psycopg = ["psycopg"]
+[project.urls]
+homepage = "https://github.com/mixxorz/DSLR"
+repository = "https://github.com/mixxorz/DSLR"
 
-[tool.poetry.group.dev.dependencies]
-isort = "^5.11.5"
-flake8 = "^7.3.0"
-black = "^22.6.0"
-ipdb = "^0.13.9"
-tox = "^4"
-twine = "^4.0.1"
-
-[tool.poetry.scripts]
+[project.scripts]
 dslr = "dslr.cli:cli"
 
-[tool.pyright]
-reportMissingImports = false
+[dependency-groups]
+dev = [
+    "ruff>=0.8.0",
+    "ipdb>=0.13.9,<1",
+    "pre-commit>=4.5.1",
+    "tox>=4,<5",
+    "twine>=4.0.1,<5",
+]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+default-groups = []
+
+[tool.ruff.lint]
+select = [
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+    "E",  # pycodestyle errors
+    "F",  # pyflakes
+    "I",  # isort
+    "W",  # pycodestyle warnings
+]
