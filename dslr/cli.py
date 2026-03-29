@@ -3,7 +3,11 @@ import sys
 
 import click
 import timeago
-import tomli
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib
 from rich import box
 from rich.table import Table
 
@@ -57,7 +61,7 @@ def cli(url, debug):
     toml_params = {}
     try:
         with open("dslr.toml", "rb") as tomlf:
-            toml_params = tomli.load(tomlf)
+            toml_params = tomllib.load(tomlf)
     except FileNotFoundError:
         pass
 
