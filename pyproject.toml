@@ -42,6 +42,7 @@ dslr = "dslr.cli:cli"
 [dependency-groups]
 dev = [
     "ruff>=0.8.0",
+    "pyright>=1.1.402",
     "ipdb>=0.13.9,<1",
     "pre-commit>=4.5.1",
     "tox>=4,<5",
@@ -54,6 +55,9 @@ build-backend = "hatchling.build"
 
 [tool.uv]
 default-groups = []
+
+[tool.pyright]
+reportMissingImports = false
 
 [tool.ruff.lint]
 select = [
