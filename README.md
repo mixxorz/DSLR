@@ -108,6 +108,14 @@ pipx install DSLR[psycopg2] # or psycopg2-binary, or psycopg
 
 ````
 
+**Install using uv**
+
+```
+
+uv tool install 'DSLR[psycopg2]' # or psycopg2-binary, or psycopg
+
+```
+
 Note: The DSLR `export` and `import` snapshot commands require `pg_dump` and
 `pg_restore` to be present in your `PATH`, so you will need the Postgres CLI
 utilities if you want to use those commands.
