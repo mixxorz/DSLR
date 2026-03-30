@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 from .console import console
 
@@ -34,8 +34,8 @@ class Settings:
         self.db = DatabaseConnection(
             host=parsed.hostname or "",
             port=parsed.port or 5432,
-            username=parsed.username or "",
-            password=parsed.password or "",
+            username=unquote(parsed.username or ""),
+            password=unquote(parsed.password or ""),
             name=parsed.path[1:],
         )
 
